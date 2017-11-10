@@ -31,7 +31,7 @@ export default {
       headerParam: {
         systemname: "",
         systemids: [],
-        sysList: sysList
+        // sysList: sysList
       },
       menuList:[],
       contentParam: {

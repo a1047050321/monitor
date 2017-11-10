@@ -359,7 +359,6 @@
             },
             //鼠标单击显示
             leftClick(data,node,store,e){
-                console.log(data);
                 var self = this;
                     $(".el-tree-node__content .el-tree-node__label").css("color","#000");
                     e.target.style.color="#20A0FF";
@@ -376,7 +375,6 @@
                             return false;
                         }else{
                             self.first =  Object.assign({},data);
-                            console.log(self.first);
                             self.areaId= self.first.id;
                         }
                         if(data.children.length != 0){

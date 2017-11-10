@@ -6,7 +6,7 @@ var vueLoaderConfig = require('./vue-loader.conf')
 function resolve(dir) {
     return path.join(__dirname, '..', dir)
 }
-
+console.log(__dirname);
 module.exports = {
     externals: {
         "BMap": "BMap",
@@ -29,8 +29,8 @@ module.exports = {
         alias: {
             'vue$': 'vue/dist/vue.esm.js',
             '@': resolve('src'),
-            '~': resolve("../static")
-                // 'excel': path.resolve(__dirname, '../src/excel'),
+            '~': resolve('/node_modules/element-ui')
+                // 'excel': path.resolve(__dirname, '/src/excel'),
         }
     },
     module: {
@@ -40,9 +40,9 @@ module.exports = {
                 options: vueLoaderConfig
             },
             {
-                test: /\.js$/,
+                test: /\.js|jsx$/,
                 loader: 'babel-loader',
-                include: [resolve('src'), resolve('test')],
+                include: [resolve('src'), resolve('test'), resolve('/node_modules/element-ui')],
             },
             {
                 test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,

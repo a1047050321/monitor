@@ -89,13 +89,13 @@
             <div><span class="icon-must"></span>用户电话</div>
             <el-input  v-model="stbUser.tel"  ref="tel" type="text" ></el-input>
         </div>
-        <div>
-            <div><span class="icon-must"></span>CA卡号</div>
-            <el-input v-model="stbUser.CA"  ref="CA"></el-input>
-        </div>
-        <div>
+         <div>
             <div><span class="icon-must"></span>机顶盒智能卡号</div>
             <el-input  v-model="stbUser.terminalId"  ref="terminalId"></el-input>
+        </div>
+        <div>
+            <div><span class="icon-must"></span>机顶盒序列号</div>
+            <el-input v-model="stbUser.CA"  ref="CA"></el-input>
         </div>
          <div>
             <div><span class="icon-must" ></span>地址</div>
@@ -105,8 +105,12 @@
         <!-- 修改用户信息-->
         <div v-if="mode == 4 && multipleSelection" class="flag">
             <div>
-                <div>所属区域</div>
+                <div>所属社区</div>
                 <el-input v-model="multipleSelection.areaName" disabled  style="margin-left:20px;"></el-input>
+            </div>
+            <div>
+                <div>姓名</div>
+                <el-input v-model="multipleSelection.name" disabled></el-input>
             </div>
             <div>
                 <div>用户名</div>
@@ -117,11 +121,11 @@
                 <el-input  v-model="multipleSelection.tel" type="text" autofocus></el-input>
             </div>
             <div>
-                <div>机顶盒序列号</div>
+                <div>机顶盒智能卡号</div>
                 <el-input  v-model="multipleSelection.terminalId"></el-input>
             </div>
-            <div>
-                <div>机顶盒智能卡号</div>
+             <div>
+                <div>机顶盒序列号</div>
                 <el-input  v-model="multipleSelection.terminalId"></el-input>
             </div>
             <div>

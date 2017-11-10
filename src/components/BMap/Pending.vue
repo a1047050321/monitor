@@ -161,6 +161,7 @@ import md5 from "js-md5"
                 changeRow:{},
                 flag:false,
                 temp:false,
+                firstIn:false
             }
         },
         methods:{
@@ -171,8 +172,11 @@ import md5 from "js-md5"
             },
             getData(){
                 var self = this;
+                if(self.firstIn){
                 bus.$emit("change",true);
-                    self.axios({
+                }
+                self.firstIn = true;
+                self.axios({
                     url:self.$iHomed("api","get_untreated"),
                     method:"get",
                     params:{

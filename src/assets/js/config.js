@@ -26,7 +26,7 @@ var CONFIG = {
     // 将公共配置放到CONFIG中暴露出去    
     globalDnsConfigVar: window.globalDnsConfigVar,
     // 提供商对象
-    ProviderObject: new window.ProviderObject(1),
+    // ProviderObject: new window.ProviderObject(1),
     // 所有提供商
     providers: [],
     // 内容类型

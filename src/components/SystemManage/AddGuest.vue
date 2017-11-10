@@ -65,14 +65,14 @@
         </div>
         <div class="content-box">
             <div><span class="icon-must"></span>管理报警类型</div>
-            <el-select v-model="newGuest.alarmType" ref="alarmType" multiple  placeholder="选择报警类型" style="width:75%;">
+            <my-select v-model="newGuest.alarmType"   @change="changeSelect" :class="{'demo-select': isMore}" ref="alarmType" multiple  placeholder="选择报警类型" style="width:75%;">
                 <el-option
                     v-for="item in alarmType"
                     :key="item.value"
                     :label="item.label"
                     :value="item.value">
                     </el-option>
-            </el-select>        
+            </my-select>        
          </div>
          <div style="clear:both;"></div>
           <div class="content-box1">
@@ -187,6 +187,7 @@
 </div>
 </template>
 <script>
+import Select from "./../select/src/select"
     export default{
         props:["buttonClick","multipleSelection","first","alarmType","edital"],
         data(){
@@ -235,6 +236,7 @@
                 flag1:false,
                 flag2:false,
                 flag3:false,
+                isMore:false,
             }
         },
         watch: {
@@ -483,6 +485,9 @@
                 
             }                
         },
+        components:{
+            "my-select":Select
+        },
         methods:{
             //限制新增管理员登录为英文字母
              userName(a){
@@ -646,6 +651,24 @@
                     })  
                 }  
             },
+             changeSelect() {
+                this.$nextTick(function () {
+                let [$span, tags, Len] = [this.$refs.alarmType.$refs.tags.children[0].childNodes, [], 0];
+                console.log($span);
+                for (let i = 0, len = $span.length; i < len; i++) {
+                    if ($span[i].className.indexOf('leave') > -1) {
+                    tags.slice(i, 1);
+                    } else {
+                    tags.push($span[i]);
+                    }
+                }
+                for (let i = 0, len = tags.length; i < len; i++) {
+                    Len += tags[i].offsetWidth;
+                }
+
+                this.isMore = Len > 90 ? true : false;
+                });
+            },
             ok(){
                 var self = this;
                 var pattern = /^\d+$/;
@@ -803,5 +826,13 @@
     .halfWidth{
         width:19.6%;
         margin-left:28px;
+    }
+
+    .demo-select:after {
+        content: '...';
+        position: absolute;
+        right: 39px;
+        bottom: 5px;
+    
     }
 </style>
