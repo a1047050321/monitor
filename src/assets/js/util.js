@@ -11,7 +11,7 @@ var flag = false;
 
 // 公共工具函数
 var util = {
-    flag:true,
+    flag: true,
     /**
      * 获取变量的类型
      * @param  {各类型} variable 变量
@@ -84,23 +84,23 @@ var util = {
      * @param  {Function}  num  标志
      * @return {Boolean}       返回布尔值
      */
-    dateTranslate: function(date,num) {
-        var y = date.getUTCFullYear();
-        var m = date.getUTCMonth();
-        var d = date.getUTCDate();
-        var h = date.getUTCHours();
-        var M = date.getUTCMinutes();
-        var s = date.getUTCSeconds();
-        if(num){
-            if(s < 30){
-                M = M - 1;
-                s = 60 - s;
-            }else{
-                s = s-30;
-            }
+    dateTranslate: function(date, num) {
+        if (num) {
+            // alert((num + 1) * 1000 + date);
+            var utcDate = (num + 60) * 1000 + date;
+            // alert(util.utcChange(utcDate));
+            utcDate = parseInt(utcDate / 1000);
+            return utcDate;
+        } else {
+            var y = date.getUTCFullYear();
+            var m = date.getUTCMonth();
+            var d = date.getUTCDate();
+            var h = date.getUTCHours();
+            var M = date.getUTCMinutes();
+            var s = date.getUTCSeconds();
+            var utc = Date.UTC(y, m, d, h, M, s);
+            return utc;
         }
-        var utc = Date.UTC(y, m, d, h, M, s);
-        return utc;
     },
 
     /**
@@ -219,7 +219,17 @@ var util = {
                 util.addZero(d.getHours()) + ":" + util.addZero(d.getMinutes()) + ":" + util.addZero(d.getSeconds());
         }
     },
-
+    /**
+     * UTC时间转换时 如 20140910123333
+     * @param  {Int}    timestamp 时间戳
+     * @return {String}           格式时间 如 2014-09-10 12:33:33
+     */
+    utcChange: function(UtcTime) {
+        var d = new Date(UtcTime);
+        return d.getFullYear() + util.addZero(d.getMonth() + 1) + util.addZero(d.getDate()) +
+            util.addZero(d.getHours()) + util.addZero(d.getMinutes()) + util.addZero(d.getSeconds());
+        // }
+    },
     /**
      * 转换空格为 &nbsp;
      * @param  {String} str 需要转换的字符串
@@ -715,21 +725,21 @@ var methods = {
      * [timeStamp 转成时间戳]
      * @param  {[Object]} date [穿入时间]
      */
-    timeStamp(theDate){
+    timeStamp(theDate) {
         var _hour = theDate.getHours();
         var _minute = theDate.getMinutes();
         var _second = theDate.getSeconds();
         var _year = theDate.getFullYear()
         var _month = theDate.getMonth();
         var _date = theDate.getDate();
-        if(_hour<10){_hour="0"+_hour ;}
-        if(_minute<10){_minute="0"+_minute;  }
-        if(_second<10){_second="0"+_second ; }
+        if (_hour < 10) { _hour = "0" + _hour; }
+        if (_minute < 10) { _minute = "0" + _minute; }
+        if (_second < 10) { _second = "0" + _second; }
         _month = _month + 1;
-        if(_month < 10){_month = "0" + _month;}
-        if(_date<10){_date="0"+_date  ;}
-        var date =   _year + "-" + _month + "-" + _date + " " + _hour + ":" + _minute + ":" + _second ;
-        var starttime = date.replace(new RegExp("-","gm"),"/");
+        if (_month < 10) { _month = "0" + _month; }
+        if (_date < 10) { _date = "0" + _date; }
+        var date = _year + "-" + _month + "-" + _date + " " + _hour + ":" + _minute + ":" + _second;
+        var starttime = date.replace(new RegExp("-", "gm"), "/");
         var timeStamp = (new Date(starttime)).getTime(); //得到毫秒数
         return timeStamp;
     },
@@ -856,12 +866,12 @@ var methods = {
     },
 
 };
-        // bus.$on("error",function(a){
-        //     if(a == 1){
-        //         MessageBox.alert("连接超时,请重新登录");
-        //     }
-        // });
- 
+// bus.$on("error",function(a){
+//     if(a == 1){
+//         MessageBox.alert("连接超时,请重新登录");
+//     }
+// });
+
 //自定义axios
 var axios = Axios.create({
     timeout: 100000,
@@ -892,7 +902,7 @@ axios.interceptors.request.use(
 //拦截器判断返回code码
 axios.interceptors.response.use(
     response => {
-        if (response.data.code == 4002 || response.data.code == 401 || response.data.code == 403 || response.data.code == 415 ) {
+        if (response.data.code == 4002 || response.data.code == 401 || response.data.code == 403 || response.data.code == 415) {
             // console.log(router.history.current.name);
             if (router.history.current.name == "Login") {
                 return false;
@@ -932,7 +942,7 @@ Object.assign(iHomed, util);
 export default {
 
     install: function(vm) {
-
+        //导出全局方法
         vm.prototype.$iHomed = iHomed;
         vm.prototype.$http = methods.http;
         vm.prototype.nodeType = methods.nodeType;
@@ -940,5 +950,6 @@ export default {
         Vue.prototype.Util = util;
         Vue.prototype.axios = axios;
         Vue.prototype.dateTranslate = util.dateTranslate;
+        Vue.prototype.utcChange = util.utcChange;
     }
 }

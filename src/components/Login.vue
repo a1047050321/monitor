@@ -18,6 +18,7 @@
   </div>
 </template>
 <script>
+  import md5 from "js-md5"
   export default {
     data() {
       return {
@@ -68,12 +69,12 @@
             this.$alert("密码不能为空！");
             return false;
             }
-          var url = this.$iHomed("api","auto_login"),
-          data = this.loginData;
+          var url = this.$iHomed("api","auto_login");
+          this.loginData.password = md5(this.loginData.password);
           self.axios({
             url:url,
             method:"post",
-            data:data
+            data:this.loginData
           }).then((res)=>{
             console.log(res.data);
             if(res.data.msg == "success"){
@@ -82,31 +83,32 @@
                 for(let i = 0; i < res.data.data.alarmType.length;i++){
                   arr.push(res.data.data.alarmType[i].code);
                 }
-            localStorage.setItem('user_id', res.data.data.id);
-            localStorage.setItem('role', res.data.data.type);
-            localStorage.setItem('codes', arr.join());
-            localStorage.setItem('username', res.data.data.userName);
-            localStorage.setItem('areaId', res.data.data.areaId);
-            localStorage.setItem('tel', res.data.data.tel);
-            localStorage.setItem('CA', res.data.data.ca);
-            var queue = res.data.data.userName+"."+res.data.data.loginTime;
-            localStorage.setItem('queue', queue);
-            // self.$store.state.role = res.data.data.type;
-              self.$message({
-                message: '登陆成功',
-                type: 'success'
-              });
-            self.$router.push({path: '/index/bMap', replace: true});    
-          }
-          else{
-            self.$alert(res.data.msg);
-          }           
-        }).catch((err) => {
-                  console.log(err);
-                  self.$alert("登陆失败！");
-        })
-      }
-    }
+                localStorage.setItem('user_id', res.data.data.id);
+                localStorage.setItem('role', res.data.data.type);
+                localStorage.setItem('fid', res.data.data.fid);
+                localStorage.setItem('codes', arr.join());
+                localStorage.setItem('username', res.data.data.userName);
+                localStorage.setItem('areaId', res.data.data.areaId);
+                localStorage.setItem('tel', res.data.data.tel);
+                localStorage.setItem('CA', res.data.data.ca);
+                var queue = res.data.data.userName+"."+res.data.data.loginTime;
+                localStorage.setItem('queue', queue);
+                // self.$store.state.role = res.data.data.type;
+                self.$message({
+                  message: '登陆成功',
+                  type: 'success'
+                });
+              self.$router.push({path: '/index/bMap', replace: true});    
+            }
+            else{
+              self.$alert(res.data.msg);
+            }           
+            }).catch((err) => {
+                    console.log(err);
+                    self.$alert("登陆失败！");
+          })
+        }
+  }
   }
 </script>
 
@@ -152,5 +154,10 @@
       display:inline-block;
       width:64px;
   }
+  .background-image {
+    width: 100%;
+    height: 100%;
+    background: url("http://ww4.sinaimg.cn/large/0060lm7Tly1fm08355rx3j31400nmaaa.jpg");
+}
 
 </style>

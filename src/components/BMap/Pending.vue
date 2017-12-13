@@ -1,135 +1,176 @@
 <template>
 <div>
-    <div class="button">
-    <span>报警时间</span>
-      <el-date-picker
-        v-model="startTime"
-        type="datetime"
-        placeholder="选择日期时间">
-        </el-date-picker>
-        -
+    <div>
+        <div class="button">
+        <span style="margin-right:8px;">报警时间</span>
         <el-date-picker
-        v-model="endTime"
-        type="datetime"
-        placeholder="选择日期时间">
-      </el-date-picker>
-        <el-input class="search" icon="search" v-model="search_value" @change="valueChange" @keyup.enter.native="search"  placeholder="输入机顶盒序列号、卡号、用户名、社区搜索"></el-input>
-        <el-button  type="primary" @click.prevent="search">搜索</el-button>
-    </div>
-    <div class="table-wrapper">
-        <el-table
-            ref="singleTable"
-            :data="tableData"
-            height="40px"
-            highlight-current-row
-            @cell-click="edital"
-            @row-dblclick="dblClick"
-            @cell-mouse-leave="mouseRemove"
-            @selection-change="handleSelectionChange"
-            >
-            <el-table-column
-            type="selection"
-            label="全选"
-            width="55">
-            </el-table-column>
-            <el-table-column
-            type="index"
-            label="序号"
-            width="70">
-            </el-table-column>
-            <el-table-column
-            prop="createDate"
-            label="报警时间"
-            width="180">
-            {{tableData[i]}}
-            </el-table-column>
-            <el-table-column
-            prop="alarmTypeName"
-            label="报警类型"
-            width="150">
-            <template scope="scope">
-                <span @dblclick="dblClick" v-if="editeFlag">{{scope.row.alarmTypeName}}</span>
-                  <el-select v-model="scope.row.alarmTypeId" @change="keyDown" v-if="!editeFlag" :value="scope.row.alarmTypeId"  @blur="save" placeholder="选择报警类型" style="width:80%;margin-left:0;">
-                    <el-option
-                    v-for="item in alarmType"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                    </el-option>
-            </el-select>  
-            </template>
-            </el-table-column>
-            <el-table-column
-            prop="name"
-            show-overflow-tooltip
-            label="报警人"
-            width="120">
-            <template scope="scope">
-                <span @dblclick="dblClick" v-if="editeFlag">{{scope.row.name}}</span>
-                <el-input v-model="scope.row.name" :value="scope.row.name" @change="keyDown" v-if="!editeFlag" @blur="save" ref="input"></el-input>
-             </template>
-            </el-table-column>
-            <el-table-column
-            prop="address"
-            show-overflow-tooltip
-            label="报警地址"
-            width="180">
-            </el-table-column>
-             <el-table-column
-             prop="terminalType"
-             show-overflow-tooltip
-            label="报警终端类型"
-            width="150">
-            </el-table-column>
-             <el-table-column
-            label="监控"
-            width="70">
-             <template scope="scope">
-                <div slot="reference" class="name-wrapper" v-show="scope.row.monitor">
-                    <router-link :to="{path:'/handlePending',query:{row:JSON.stringify(scope.row),type:1}}"><div class="icon_monitor" style="width:21px;height:21px;"></div></router-link>
-                </div>
-                 <div v-show="!scope.row.monitor" style="margin-left:5px;">无</div> 
-            </template>
-            </el-table-column>
-            <el-table-column
-            label="详情"
-            width="70">
-                <template scope="scope">
-                 <div slot="reference" class="name-wrapper">
-                    <i class="el-icon-information"></i>
-                </div>
-            </template>
-            </el-table-column>
-            <el-table-column
-            label="处理">
-                <template scope="scope">
-                        <div slot="reference" class="name-wrapper" v-show="scope.row.monitor">
-                            <router-link :to="{path:'/handlePending',query:{row:JSON.stringify(scope.row)}}"><i class="el-icon-edit" ></i></router-link>
+            v-model="startTime"
+            size="medium"
+            type="datetime"
+            style="margin-right:4px;
+            width:164px;"
+            placeholder="选择日期时间">
+            </el-date-picker>
+            -
+            <el-date-picker
+            v-model="endTime"
+            size="medium"
+            style="margin-left:4px;
+            width:164px;"
+            type="datetime"
+            placeholder="选择日期时间">
+        </el-date-picker>
+        <div class="searchButton">
+            <el-input class="search" size="medium"  prefix-icon="el-icon-search" v-model="search_value"  @keyup.enter.native="getData"  placeholder="输入机顶盒序列号、卡号、用户名、社区搜索"></el-input>
+            <div style="margin-left:16px;float:right;">
+            <el-button  type="primary" size="medium" style="width:90px;"  @click.prevent="getData">搜索</el-button>
+            <el-button  size="medium" style="width:90px;margin-left:12px;"  @click.prevent="reset">重置</el-button>
+            </div>
+        </div>
+        </div>
+        <div class="table-wrapper">
+            <el-table
+                ref="singleTable"
+                :data="tableData"
+                height="42px"
+                class="tableSet"
+                size="mini"
+                highlight-current-row
+                @cell-click="edital"
+                @cell-mouse-leave="mouseRemove"
+                @selection-change="handleSelectionChange"
+                >
+                <el-table-column
+                type="selection"
+                label="全选"
+                width="55">
+                </el-table-column>
+                <el-table-column
+                type="index"
+                label="序号"
+                width="70">
+                </el-table-column>
+                <el-table-column
+                prop="createDateTran"
+                show-overflow-tooltip
+                label="报警时间"
+                width="200"
+                >
+                </el-table-column>
+                <el-table-column
+                prop="alarmTypeName"
+                show-overflow-tooltip
+                label="报警类型"
+                :filters="alarmType"
+                :filter-method="alarmTypeChange"
+                width="100"
+                >
+                </el-table-column>
+                <el-table-column
+                prop="name"
+                show-overflow-tooltip
+                label="报警人"
+                >
+                </el-table-column>
+                <el-table-column
+                prop="address"
+                show-overflow-tooltip
+                label="报警地址"
+                >
+                </el-table-column>
+                <el-table-column
+                prop="terminalType"
+                show-overflow-tooltip
+                label="报警终端类型"
+                header-align="center"
+                align="center"
+                :filters="optionMethods"
+                :filter-method="alarmTypeChange1"
+                width="120"
+                >
+                </el-table-column>
+                <el-table-column
+                label="监控"
+                width="70"
+                header-align="center"
+                align="center"
+                >
+                <template  slot-scope="scope">
+                    <div slot="reference" class="name-wrapper" v-show="scope.row.monitor">
+                        <router-link :to="{path:'/handlePending',query:{row:JSON.stringify(scope.row),type:1,status:'待处理'}}"><i class="el-icon-view" ></i></router-link>
+                    </div>
+                    <div v-show="!scope.row.monitor" style="text-align:center;">-</div> 
+                </template>
+                </el-table-column>
+                <el-table-column
+                label="详情"
+                width="70"
+                header-align="center"
+                align="center"
+                >
+                    <template  slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <a href="javascript:void(0)"><i class="el-icon-document"></i></a>
+                    </div>
+                </template>
+                </el-table-column>
+                <el-table-column
+                width="70"
+                header-align="center"
+                align="center"
+                label="处理">
+                    <template  slot-scope="scope">
+                        <div slot="reference" class="name-wrapper" v-show="scope.row.monitor" style="text-align:center;">
+                            <i class="el-icon-edit-outline" @click="toMonitor(scope.row)"></i>
                         </div>
-                        <div v-show="!scope.row.monitor" style="margin-left:5px;">无</div> 
+                        <div v-show="!scope.row.monitor" style="text-align:center;color:#4ba6ff"> <a href="javascript:void(0)" style="color:#4ba6ff"><i class="el-icon-edit-outline"></i></a></div> 
                     </template>
-            </el-table-column>
-        </el-table>
-    </div>
-            <div class="block">
-                <el-pagination
-                style="margin-left:200px;"
+                </el-table-column>
+            </el-table>
+        </div>
+        <div class="block">
+            <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-                :current-page="currentPage"
+                :current-page="pageIdx"
                 :page-sizes="[20, 30, 40]"
                 :page-size="pageNum"
                 layout="total, sizes, prev, pager, next, jumper"
                 :total="total">
-    </el-pagination>
-            </div>
-    <monitor-info :multipleSelection="clickRow" :alarmType="alarmType"></monitor-info>
+            </el-pagination>
+        </div>
+    </div>
+    <div class="noMonitorShow" v-if="noMonitorShow">
+        <div class="mask"></div>
+        <div class="content1">
+            <div class="title1">报警信息<a href="javascript:void(0)"><span style="float:right;margin-right:16px;font-size:20px;color:#fff;" @click="close">&times;</span></a></div>
+            <div class="p" :title="row.address" style="margin-top:24px"><span>地区:{{row.address}}</span></div>
+            <div class="p" :title="row.name"><span>报警人:{{row.name}}</span></div>
+            <div class="p" :title="row.alarmTypeName"><span>报警类型:{{row.alarmTypeName}}</span></div>
+            <ul class="opeator1">
+                <li class="call">
+                    <div><el-button type="primary" @click="ulbtnClick" style="margin-left:0;">致电</el-button></div>
+                </li>
+                <li class="send">
+                    <div><el-button type="primary" @click="ulbtnClick">上报</el-button></div>
+                </li>
+                <li class="commit">
+                    <div><el-button type="primary" @click="ulbtnClick">提交</el-button></div>
+                </li>
+                <li class="end">
+                    <div><el-button type="primary" @click="ulbtnClick">解除</el-button></div>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <no-monitor :mode="mode" :row="row" v-show="liClick" @liClick="opeator" @buttonShow="infoChange"></no-monitor>
     <edital-info v-show="editalInfo" @editalInfo="editalInfoReturn" :row="row" :monitor="monitor" :alarmType="alarmType"></edital-info>
 </div>
 </template>
 <script>
 import EditalInfo from "./EditalInfo"
 import MonitorInfo from "./MonitorInfo"
+import NoMonitor from './NoMonitor'
 import bus from "../../assets/js/bus"
 import md5 from "js-md5"
 
@@ -139,7 +180,6 @@ import md5 from "js-md5"
             return {
                 total:0,
                 pageIdx:1,
-                currentPage: 1,
                 pageNum:20,
                 key:1,
                 //monitor:0 有监控 1 是没监控
@@ -161,82 +201,195 @@ import md5 from "js-md5"
                 changeRow:{},
                 flag:false,
                 temp:false,
-                firstIn:false
+                firstIn:false,
+                pageFlag:1,
+                optionMethods: [{
+                    value: '机顶盒',
+                    label: '机顶盒',
+                    text: '机顶盒'
+                    }, {
+                    value: '短信',
+                    label: '短信',
+                    text: '短信',
+                },{
+                
+                    value: 'APP',
+                    label: 'APP',
+                    text: 'APP'
+                }],
+                noMonitorShow:false,
+                feiFlag:false,
+                mode:1,
+                liClick:false,
+                editalInfo:false,
+                buttonShow:false,       
+                monitor:"",
+            }
+        },
+        watch:{
+            //选择框修改，值为空获取待处理
+            search_value(value){
+                if(!value){
+                    this.pageIdx = 1;
+                    this.getData();
+                }
             }
         },
         methods:{
-            valueChange(val){
-                if(!val){
-                    this.getData();
-                }
-            },
+            //获取待处理数据
             getData(){
                 var self = this;
-                if(self.firstIn){
-                bus.$emit("change",true);
-                }
-                self.firstIn = true;
+                self.pageIdx = 1;
+                self.tableData = [];
                 self.axios({
                     url:self.$iHomed("api","get_untreated"),
                     method:"get",
                     params:{
                         currentPage: self.pageIdx,
-                        pageSize:self.pageNum
+                        pageSize:self.pageNum,
+                        beginTime:self.startTime?self.dateTranslate(self.startTime):"",
+                        endTime:self.endTime?self.dateTranslate(self.endTime):"",
+                        search:self.search_value
                     }
                 })
                 .then((res)=>{
                     if(res.data.data.data){
-                     for(let i = 0;i < res.data.data.data.length;i++){
-                         var datalist = res.data.data.data;
-                         if(! datalist[i].terminalType){
-                             datalist[i].terminalType = "无";
-                         }
-                        datalist[i].createDate  = new Date(datalist[i].createDate).toLocaleDateString()+" "+new Date(datalist[i].createDate).toLocaleTimeString();
-                        datalist[i].pendDate  = new Date(datalist[i].pendDate).toLocaleDateString()+" "+new Date(datalist[i].pendDate).toLocaleTimeString();
-                        datalist[i].reportDate  = new Date(datalist[i].reportDate).toLocaleDateString()+" "+new Date(datalist[i].reportDate).toLocaleTimeString();
-                        if(datalist[i].monitor){
-                            self.axios({
-                            method:"get",
-                            url:self.$iHomed("api","paly_token"),
-                            params:{
-                                accesstoken:localStorage.getItem("token"),
-                                programid:datalist[i].monitor
-                            },
-                            withCredentials:false
-                            }).then((response)=>{
-                                console.log(response.data);
-                                if(response.data.ret == 0){
-                                    // src = "http://httpdvb.slave.homed.me:13164/playurl?accesstoken="+localStorage.getItem("token")+"&protocol=hls&playtype=live&programid="+sele.row.chnlid+"&playtoken="+res.data.play_token;
-                                    datalist[i].monitorUrl = "http://httpdvb.slave.homed.me:13164/playurl?accesstoken="+localStorage.getItem("token")+"&protocol=hls&playtype=live&programid="+datalist[i].monitor+"&playtoken="+response.data.play_token;
-                                    // this.row.demandurl = url;
-                                    console.log( datalist[i].monitorUrl);
-                                }
-                            })
+                        self.tableData = [];
+                        for(let i = 0;i < res.data.data.data.length;i++){
+                            var datalist = res.data.data.data;
+                            if(! datalist[i].terminalType){
+                                datalist[i].terminalType = "无";
+                            }
+                            datalist[i].createDateTran  = new Date(datalist[i].createDate).toLocaleDateString()+" "+new Date(datalist[i].createDate).toLocaleTimeString();
+                            datalist[i].pendDate  = new Date(datalist[i].pendDate).toLocaleDateString()+" "+new Date(datalist[i].pendDate).toLocaleTimeString();
+                            datalist[i].reportDate  = new Date(datalist[i].reportDate).toLocaleDateString()+" "+new Date(datalist[i].reportDate).toLocaleTimeString();
                         }
+                        self.total = res.data.data.total;
+                        self.tableData =datalist;
+                        self.$emit("total",self.total);
                     }
-                    self.tableData =datalist;
+                    else{
+                        //没有数据
+                        self.total = res.data.data.total;
+                        self.$emit("total",self.total);
                     }
-                    self.total = res.data.data.total;
-                    self.$emit("total",self.total);
                 })
-                .catch((error)=>{
-                    //地址错误
-                    console.log(error);
-                })
+            },
+            //跳转监控页 先判断当前是否有人在处理此条数据
+            toMonitor(row){
+                var self = this;
+                self.axios({
+                    method:"post",
+                    url:self.$iHomed("api","editing")+row.id,
+                }).then((res)=>{
+                    console.log(res.data);
+                    if(res.data.code == 0){
+                        console.log("标记成功");
+                        self.$router.push({path:'/handlePending',query:{row:JSON.stringify(row),status:'待处理'}});
+                    //有人处理
+                    }else{
+                        if(res.data.code ==101 && res.data.msg == "treated"){
+                            self.$alert("当前报警已处理，请选择其他报警处理");
+                        }else{
+                            self.$alert(res.data.msg);
+                        }
+                        return false;
+                    }
+                })    
+            },
+            //表格里报警类型赛选
+            alarmTypeChange(value, row){
+                return row.alarmTypeId === value;
+            },
+            //表格里报警终端类型筛选
+            alarmTypeChange1(value, row){
+                return row.terminalType === value;
             },
             //鼠标已出单元格 取消编辑模式
             mouseRemove(row, column, cell, event){
                 this.editeFlag = true;
             },
-             keyDown(){
-                this.flag = true;
+            //非监控报警按钮点击事件
+            ulbtnClick(){
+                var self = this;
+                $("ul.opeator1").click(function(e){
+                    var e = e||window.event,
+                        target = e.target ||e.srcElement;
+                    switch(target.textContent){
+                        case "致电":
+                        self.mode =1;
+                        self.liClick = true;
+                        self.feiFlag = true;
+                        self.noMonitorShow = false;
+                        break;
+                        case "上报":
+                        self.mode =2;
+                        self.liClick = true;
+                        self.noMonitorShow = false;
+                        break;
+                        case "提交":
+                        self.mode =3;
+                        self.liClick = true;
+                        self.noMonitorShow = false;
+                        break;
+                        case "解除":
+                        self.mode =4;
+                        if(!self.feiFlag){
+                            self.$alert("请先致电！");
+                            return false;
+                        }else{
+                        self.liClick = true;
+                        self.noMonitorShow = false;
+                        }
+                        break;
+                    }
+                })
             },
-             //表双击可编辑
-            dblClick(row,event){
-                 this.editeFlag = false;
-                 this.changRow = row;
+            //关闭非监控报警弹窗
+            close(){
+                this.noMonitorShow = false;
+                var self = this;
+                    self.axios({
+                        method:"post",
+                        url:self.$iHomed("api","editing")+self.row.id+"/cancel",
+                    }).then((res)=>{
+                        console.log(res.data);
+                        if(res.data.code == 0){
+                            console.log("标记解除");
+                        }
+                    })
             },
-            //失去焦点
+            //非监控解除
+            infoChange(a){
+                this.buttonShow = a;
+                 this.$message({
+                    type: 'success',
+                    message: '解除成功！'
+                });
+                this.getData();
+            },
+            //关闭noMonitor按钮弹窗
+            opeator(a,b){
+                this.liClick = a;
+                var self = this;
+                if(b == "false"){
+                    this.feiFlag = b;
+                    this.noMonitorShow = true;
+                }
+                //退出处理模式
+                if(!this.liClick && !this.noMonitorShow){
+                    self.axios({
+                        method:"post",
+                        url:self.$iHomed("api","editing")+self.row.id+"/cancel",
+                    }).then((res)=>{
+                        console.log(res.data);
+                        if(res.data.code == 0){
+                            console.log("标记解除");
+                        }
+                    })
+                }
+            },
+            //双击修改表单 失去焦点
             save: function (row) {
                 this.editing = false;
                 this.editeFlag= true;
@@ -268,6 +421,7 @@ import md5 from "js-md5"
             //显示详情框消息变化
             editalInfoReturn(a,b){
                 this.editalInfo = a;
+                // 修改成功
                 if(b){
                 this.getData();
                 }
@@ -276,80 +430,66 @@ import md5 from "js-md5"
              handleSizeChange(val) {
                  //看接口最大能获取多少
                 this.pageNum = val;
+                //根据当前状态判断翻页的函数
                 this.getData();
             },
             //点击第几页
             handleCurrentChange(val) {
                 this.pageIdx = val;
-                this.getData();
+                    this.getData();
+                // if(this.pageFlag == 1){
+                // }else{
+                //     this.search();
+                // }
             },
             //多选框
              handleSelectionChange(val) {
                 this.multipleSelection = val;
+                console.log(this.multipleSelection);
                 var length = this.multipleSelection.length;
                 this.clickRow = this.multipleSelection[length-1];
                    
              },
+            //点击模板图标
             edital(row, column, cell, event){
+                var self = this;
                 if(column.label == "详情"){
-                    this.monitor=row.monitor;
-                    this.editalInfo = true;
-                    this.row = row;
+                    self.monitor=row.monitor;
+                    self.editalInfo = true;
+                    self.row = row;
+                }else if(column.label == "处理" && !row.monitor){
+                    self.row = row;
+                    //判断是否为正在处理状态  非监控报警
+                    self.axios({
+                        method:"post",
+                        url:self.$iHomed("api","editing")+self.row.id,
+                    }).then((res)=>{
+                        if(res.data.code == 0){
+                            self.noMonitorShow = true;
+                            console.log("标记成功");
+                            //定时器
+                            setTimeout(function(){
+                                self.noMonitorShow = false;
+                                //把状态改为非处理
+                                self.$message({
+                                    message: '当前操作已超时，请重新处理',
+                                    type: 'warning'
+                                });
+                            },120000);
+                        //当前有人处理此报警
+                        }else{
+                            self.noMonitorShow = false;
+                            if(res.data.code ==101 && res.data.msg == "treated"){
+                                self.$alert("当前报警已处理，请选择其他报警处理");
+                            }else{
+                                self.$alert(res.data.msg);
+                            }
+                            return false;
+                        }
+                    })
                 }
             },
-            //回车搜索
-            search(){
-                var self = this;
-                self.tableData = [];
-                self.axios({
-                    url:self.$iHomed("api","get_untreated"),
-                    method:"get",
-                    params:{
-                        currentPage: self.pageIdx,
-                        pageSize:self.pageNum,
-                        beginTime:self.dateTranslate(self.startTime),
-                        endTime:self.dateTranslate(self.endTime),
-                        search:self.search_value
-                    }
-                })
-                .then((res)=>{
-                    if(res.data.data.data){
-                     for(let i = 0;i < res.data.data.data.length;i++){
-                         var datalist = res.data.data.data;
-                         console.log(datalist);
-                         if(! datalist[i].terminalType){
-                             datalist[i].terminalType = "无";
-                         }
-                        datalist[i].createDate  = new Date(datalist[i].createDate).toLocaleDateString()+" "+new Date(datalist[i].createDate).toLocaleTimeString();
-                        datalist[i].pendDate  = new Date(datalist[i].pendDate).toLocaleDateString()+" "+new Date(datalist[i].pendDate).toLocaleTimeString();
-                        datalist[i].reportDate  = new Date(datalist[i].reportDate).toLocaleDateString()+" "+new Date(datalist[i].reportDate).toLocaleTimeString();
-                         self.axios({
-                            method:"get",
-                            url:self.$iHomed("api","paly_token"),
-                            params:{
-                                accesstoken:localStorage.getItem("token"),
-                                programid:datalist[i].monitor
-                            },
-                            withCredentials:false
-                        }).then((response)=>{
-                            console.log(response.data);
-                            if(response.data.ret == 0){
-                                // src = "http://httpdvb.slave.homed.me:13164/playurl?accesstoken="+localStorage.getItem("token")+"&protocol=hls&playtype=live&programid="+sele.row.chnlid+"&playtoken="+res.data.play_token;
-                                datalist[i].monitorUrl = "http://httpdvb.slave.homed.me:13164/playurl?accesstoken="+localStorage.getItem("token")+"&protocol=hls&playtype=live&programid="+datalist[i].monitor+"&playtoken="+response.data.play_token;
-                                // this.row.demandurl = url;
-                                console.log( datalist[i].monitorUrl);
-                            }
-                        })
-                    }
-                    self.tableData =datalist;
-                    console.log(self.tableData);
-                    }
-                    else{
-                    self.total = res.data.data.total;
-                    self.$emit("total",self.total);
-                    }
-                })
-            },
+            //如果当前有token，不执行，没有获取一遍
             getToken(){
                 var self = this;
                 console.log(localStorage.getItem("token"));
@@ -382,21 +522,29 @@ import md5 from "js-md5"
                     })
                 }
             },   
+            //重置按钮
+            reset(){
+                this.search_value = "";
+                this.beginTime = "";
+                this.endTime = "";
+                this.pageIdx = 1;
+                this.getData();
+            }
         },
          mounted(){
+            this.getData();
             this.row =this.tableData[this.i];
             if(!localStorage.getItem("token")){
                 this.getToken();
             }
-            this.getData();
-            bus.$on("temp",(a)=>{
-                this.temp = a;
-                this.getData();
-            })
+            bus.$off("temp").$on("temp",(a)=>{
+                    this.getData();
+            });
         },
         components:{
             "monitor-info":MonitorInfo,
-            "edital-info":EditalInfo
+            "edital-info":EditalInfo,
+            "no-monitor":NoMonitor,
         }
     }
 </script>
@@ -408,45 +556,101 @@ import md5 from "js-md5"
         height:100%;
         overflow:hidden;
     }
-     .button .el-input.search{
+    .button{
+        margin:24px 0;
+    }
+    .button .el-input.search{
         display:inline-block;
         height:30px;
-        width:400px;
+        width:328px;
         margin-left:150px;
     }
     .el-table{
-        margin-top:10px;
-        font-size:12px;
+        font-size:13px;
+        border:1px solid #dfe6ec;
+        border-bottom:none;
         position:absolute;
-        top:90px;
-        bottom:40px;
-        width:80%;
-        overflow-y:scroll;
+        top:148px;
+        bottom:140px;
     }
-    .block{
-        position:fixed;
-        left:350px;
-        bottom:40px;
+    .tableSet .el-table__header-wrapper{
+        height:42px;
     }
     .el-badge.item{
         margin-top:0;
     }
-    .el-badge__content.is-fixed {
-        position: absolute;
-        top: 20px;
-        right: 160px;
-        -ms-transform: translateY(-50%) translateX(100%);
-        transform: translateY(-50%) translateX(100%);
-    }
+    
     div.name-wrapper i{
         color:#20A0ff;
     }
     .el-select .el-input{
         margin-top:0;
     }
-    .el-button{
-        width:88px;
-        height:28px;
-        line-height:8px;
+    .searchButton{
+        position:fixed;
+        top:88px;
+        right:24px;
     }
+    .selectChange{
+        position:fixed;
+        top:300px;
+        left:600px;
+        border:1px solid red;
+    }
+    .cell{
+        padding:0 16px;
+    }
+    .noMonitorShow{
+        position:fixed;
+        left:50%;
+        top:50%;
+        z-index:99;
+    }
+    .content1{
+        position:absolute;
+        top:-95px;
+        left:-176px;
+        width:352px;
+        height:190px;
+        background:#fff;
+        z-index:1000;
+    }
+    .content1 div:not(.title1){
+        margin-top:8px;
+    }
+    .content1 .p{
+        height:14px;
+        font-size:14px;
+        text-align:center;
+    }
+    .title1 {
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        text-align: left;
+        padding-left: 16px;
+        margin: 0;
+        background: #20A0FF;
+        color: #fff;
+    }
+    .opeator1{
+        margin:24px 16px;
+    }
+    .opeator1 .el-button{
+        width:74px;
+        height:28px;
+        line-height:5px;
+        float:left;
+        margin-left:8px;
+    }
+    .mask {
+    position: fixed;
+    top: 0;
+    bottom: 84px;
+    left: -264px;
+    right: 0;
+    background: #000;
+    opacity: 0.3;
+    z-index: 98;
+}
 </style>

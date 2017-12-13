@@ -1,15 +1,16 @@
 <template>
   <div id="app">
     <el-row class="app-content">
-      <el-col :span="4" class="menu-wrapper">
+      <div class="menu-wrapper">
         <!-- 菜单导航头部 -->
         <menu-header class="menu-header"></menu-header>
         <!-- 菜单列表 -->
         <menu-content :contentParam="contentParam" class="menu-content"></menu-content>
-      </el-col>
-      <el-col :span="20" class="content-wrapper">
-          <router-view  :showType="showType" :alarmType="alarmType" @callType="alarmChange" :newAlarm="newAlarm"></router-view>
-      </el-col>
+      </div>
+      <div class="content-wrapper">
+          <router-view  :showType="showType" :alarmType="alarmType" @callType="alarmChange" :newAlarm="newAlarm">
+          </router-view>
+      </div>
     </el-row>
     <app-footer :footerParam="footerParam"></app-footer>        
   </div>
@@ -43,7 +44,7 @@ export default {
       },
       alarmType:[],
       showType:{},
-      newAlarm:{}
+      newAlarm:{},
     }
   },
   mounted() {
@@ -57,9 +58,9 @@ export default {
     this.getAlarm();
   },
   methods:{
-     //获取报警类型信息
+     //获取该管理员报警类型信息
         getAlarm(){
-             var self = this;
+            var self = this;
               self.axios({
                   method:"get",
                   url:self.$iHomed("api","alarmType_list"),
@@ -70,14 +71,16 @@ export default {
               })
               .then((res)=>{
                   res = res.data.data;
-                    for(let i = 0;i<res.data.length;i++){
+                  console.log(res);
+                  for(let i = 0;i<res.data.length;i++){
                       self.alarmType.push({
                           value:res.data[i].id,
-                          label:res.data[i].name
+                          label:res.data[i].name,
+                          text:res.data[i].name,
                       })
                       self.showType[res.data[i].id] = res.data[i].name;
                   }
-                  self.$store.commit("ALARMTYPE",self.alarmType);
+                  // self.$store.commit("ALARMTYPE",self.alarmType);
               })
         },
         alarmChange(a,b){
@@ -88,7 +91,14 @@ export default {
   }
 </script>
 <style>
+.menu-header{
+  height:100%;
+}
   .content-wrapper{
     height:100%;
+    position:fixed;
+    top:0;
+    left:264px;
+    right:24px;
   }
 </style>

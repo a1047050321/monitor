@@ -23,7 +23,7 @@ import Home from "@/components/Home"
 Vue.use(Router);
 
 const router = new Router({
-        mode: 'history', //把/#去掉   要在index.html 直接引入的js src="/static"
+        // mode: 'history', //把/#去掉   要在index.html 直接引入的js src="/static"
         routes: [{ // 首页，也是数据统计
                 path: '/',
                 name: 'Index',
@@ -49,18 +49,18 @@ const router = new Router({
                     },
                     { // 首页
                         path: '/index',
-                        name:"FIndex",
+                        name: "FIndex",
                         component: FIndex,
                         redirect: { name: 'BMap' },
-                        children:[{ // 报警地图
-                                path: '/index/bMap',
-                                name: 'BMap',
-                                component: BMap
-                        },{ // 折线图
+                        children: [{ // 报警地图
+                            path: '/index/bMap',
+                            name: 'BMap',
+                            component: BMap
+                        }, { // 折线图
                             path: '/index/echarts',
                             name: 'Echarts',
                             component: Echarts
-                    }]
+                        }]
                     },
                     { // 报警控制
                         path: '/callControl',

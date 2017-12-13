@@ -15,13 +15,13 @@
 </script>
 <style lang="">
     .monitorFault {
-        position: fixed;
+    position: fixed;
     top: 20px;
     right: 10px;
     width: 300px;
     height: 150px;
     background-color: #fff;
-    border: 1px solid #ccc;
+    border: 1px solid #dfe6ec;
 }
 .infoHeader {
     width: 100%;

@@ -3,76 +3,60 @@
     <div class="nav-wrapper">
         <!-- 面包屑导航路径 -->
         <el-breadcrumb separator=">">
-            <el-breadcrumb-item>
-                <router-link to="/callManage">报警管理</router-link>
-            </el-breadcrumb-item>
+            <el-breadcrumb-item :to="{path:'/callManage'}">报警管理 </el-breadcrumb-item>
             <el-breadcrumb-item>报警控制</el-breadcrumb-item>
         </el-breadcrumb>
     </div>
     <div class="buttonAll">
-        <el-button type="primary" @click="getData" :disabled="role">刷新</el-button>
+        <el-button type="primary" @click="getData" :disabled="role" style="margin-left:0;">刷新</el-button>
         <el-button type="primary" @click="newType" :disabled="role">新增</el-button>
         <el-button type="primary" :disabled="multi" @click="editType">修改</el-button>
         <el-button type="primary" :disabled="del" @click="deleteType">删除</el-button>
     </div>
     <el-table
-                    ref="singleTable"
-                    :data="tableData"
-                    height="40px"
-                    highlight-current-row
-                    @selection-change="handleSelectionChange"
-                    >
-                    <el-table-column
-                    type="selection"
-                    label="全选"
-                    width="55">
-                    </el-table-column>
-                    <el-table-column
-                    type="index"
-                    label="序号"
-                    width="83">
-                    </el-table-column>
-                    <el-table-column
-                    property="code"
-                    show-overflow-tooltip
-                    label="报警类型编号"
-                    width="170">
-                    </el-table-column>
-                    <el-table-column
-                    property="name"
-                    show-overflow-tooltip
-                    label="报警类型"
-                    width="140">
-                    </el-table-column>
-                    <el-table-column
-                    property="reportTime"
-                    show-overflow-tooltip
-                    width="180"
-                    label="自动上报时间(s)">
-                    </el-table-column>
-                    <el-table-column
-                    property="repeatTrans"
-                    show-overflow-tooltip
-                    label="不重复报警"
-                    width="150">
-                    </el-table-column>
-                    <el-table-column
-                    property="intervalTime"
-                    show-overflow-tooltip
-                    label="不重复报警时间(s)"
-                    width="180">
-                    </el-table-column>
-                     <el-table-column
-                    property="tipText"
-                    show-overflow-tooltip
-                    label="提醒文字">
-                    </el-table-column>
-                </el-table>
+            ref="singleTable"
+            :data="tableData"
+            height="42px"
+            size="mini"
+            highlight-current-row
+            @selection-change="handleSelectionChange"
+            >
+            <el-table-column
+            type="selection"
+            label="全选"
+            width="55">
+            </el-table-column>
+            <el-table-column
+            type="index"
+            label="序号"
+            width="83">
+            </el-table-column>
+            <el-table-column
+            property="code"
+            show-overflow-tooltip
+            label="报警类型编号"
+            >
+            </el-table-column>
+            <el-table-column
+            property="name"
+            show-overflow-tooltip
+            label="报警类型"
+            >
+            </el-table-column>
+            <el-table-column
+            property="reportTime"
+            show-overflow-tooltip
+            
+            label="自动上报时间(s)">
+            </el-table-column>
+        </el-table>
     <add-callType v-if="addType" :mode="mode" @editType="editInfo"  @addType="typeChange" :multipleSelection="multiple"></add-callType>
+    <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
 </div>
 </template>
 <script>
 import AddCallType from './AddCallType'
+import MonitorInfo from "./MonitorInfo"
     export default{
         data(){
             return {
@@ -87,10 +71,12 @@ import AddCallType from './AddCallType'
                 multiple:"",
                 alarmType:[],
                 showType:{},
-                role:false
+                role:false,
+                moniInfoShow:true
             }
         },
         methods:{
+            //获取数据并处理
             getData(){
                 var self = this;
                 self.tableData = [];
@@ -109,19 +95,23 @@ import AddCallType from './AddCallType'
                         if(res.data[i].repeat){
                             res.data[i].repeat = "true";
                             res.data[i].repeatTrans = "是";
+                            res.data[i].internalTime = Number(res.data[i].intervalTime);
                         }
                         else{
                             res.data[i].repeat = "false";
                             res.data[i].repeatTrans = "否";
+                            res.data[i].internalTime = "-";
                         }
                         self.tableData.push(res.data[i]);
                         self.alarmType[i] ={
                             value:res.data[i].id,
-                            label:res.data[i].name
+                            label:res.data[i].name,
+                            text:res.data[i].name
                         }
                         self.showType[res.data[i].id] = res.data[i].name;
                     }
                     self.$emit("callType",self.showType , self.alarmType);
+                    
                 })
             },
              //选择显示数量
@@ -140,14 +130,12 @@ import AddCallType from './AddCallType'
             //多选框
              handleSelectionChange(val) {
                 this.multipleSelection = val;
-                var role =localStorage.getItem('role');
-                console.log(role);
-                if(role != 0){
+                 var username = localStorage.getItem("username");
+                if(username == "admin"){
                     if(this.multipleSelection.length == 1){
                         this.multi = false;
-                    }
-                    else{
-                    this.multi = true;
+                    }else{
+                        this.multi = true;
                     };
                     if(this.multipleSelection.length >= 1){
                         this.del = false;
@@ -169,6 +157,7 @@ import AddCallType from './AddCallType'
                  var self = this;
                  //修改报警类型
                  if(self.mode == 4){
+                     console.log(a);
                      self.axios({
                         method:"put",
                         data:{
@@ -223,33 +212,33 @@ import AddCallType from './AddCallType'
             deleteType(){
                 var self = this;
                 self.$confirm('确定删除选中报警类型信息吗', ' ', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        }).then(() => {
-                        //同步信息代码
-                        var arr = [];
-                        for(let i = 0;i < self.multipleSelection.length;i++){
-                            arr.push(self.multipleSelection[i].id)
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                }).then(() => {
+                    //同步信息代码
+                    var arr = [];
+                    for(let i = 0;i < self.multipleSelection.length;i++){
+                        arr.push(self.multipleSelection[i].id)
+                    }
+                    //ajax delete
+                    self.axios({
+                        method:"delete",
+                        url:self.$iHomed("api","add_type"),
+                        data:{                                  
+                        "intIds": arr,
                         }
-                        //ajax delete
-                        self.axios({
-                            method:"delete",
-                            url:self.$iHomed("api","add_type"),
-                            data:{                                  
-                            "intIds": arr,
-                            }
-                        }).then((res)=>{
-                            if(res.data.code == 0){
-                                self.$message({
-                                    message: '删除成功',
-                                    type: 'success'
-                                });
-                            }else{
-                                self.$alert(res.data.msg);
-                            }
-                            self.getData();
-                        })
-                    }).catch(() => {
+                    }).then((res)=>{
+                        if(res.data.code == 0){
+                            self.$message({
+                                message: '删除成功',
+                                type: 'success'
+                            });
+                        }else{
+                            self.$alert(res.data.msg);
+                        }
+                        self.getData();
+                    })
+                }).catch(() => {
                     this.$message({
                         type: 'info',
                         message: '已取消同步操作'
@@ -265,42 +254,40 @@ import AddCallType from './AddCallType'
             }
         },
         mounted(){
-            var role = localStorage.getItem('role');
-            if(role == 0){
-                this.role = true;
-                this.multi = true;
-                this.del = true;
-            }
-            else{
-                this.role = false;           
-            }
+            var username = localStorage.getItem("username");
+                if(username != "admin"){
+                    this.role = true;
+                    this.multi = true;
+                    this.del = true;
+                }else{
+                    this.role = false;
+                }
             this.getData();
         },
         components:{
-            "add-callType":AddCallType
+            "add-callType":AddCallType,
+            "monitor-info":MonitorInfo
         }
     }
 </script>
 <style scoped>
-    .nav-wrapper{
-        padding-bottom:5px;
-        margin-top:5px;
-    }
-    .nav-wrapper span{
-         font-size:15px;
-    }
     .el-table{
         position:absolute;
-        top:84px;
-        bottom:10px;
+        top:148px;
+        bottom:84px;
         font-size:12px;
-        width:80%;
+        width:100%;
+        border:1px solid #dfe6ec;
+        border-bottom:none;
         overflow-x:hidden;
     }
+    table th,table td{
+        height:42px;
+    }
     .el-button{
-        width:88px;
-        height:28px;
-        line-height:8px;
-        margin-top:7px;
+        width:90px;
+        height:36px;
+        margin-top:24px;
+        margin-left:12px;
     }
 </style>

@@ -15,7 +15,8 @@ import 'vue-video-player/src/custom-theme.css'
 
 import 'videojs-contrib-hls/dist/videojs-contrib-hls.js'
 import 'video.js/dist/lang/zh-CN.js'
-import 'element-ui/lib/theme-default/index.css'
+// import 'element-ui/lib/theme-default/index.css'
+import 'element-ui/lib/theme-chalk/index.css'
 import '@/assets/css/main'
 import store from "@/assets/js/store"
 import Vuex from 'vuex';

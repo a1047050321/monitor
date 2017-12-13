@@ -3,9 +3,7 @@
     <div class="nav-wrapper">
         <!-- 面包屑导航路径 -->
         <el-breadcrumb separator=">">
-            <el-breadcrumb-item>
-                <router-link to="/systemManage">系统管理</router-link>
-            </el-breadcrumb-item>
+            <el-breadcrumb-item>系统管理 </el-breadcrumb-item>
             <el-breadcrumb-item>管理员管理</el-breadcrumb-item>
         </el-breadcrumb>
     </div>
@@ -24,31 +22,34 @@
         </div>
         <!-- 右侧显示信息 -->
         <div class="infoContent">
-         <div class="infoText">
-                <div class="communityLabel">{{region}}名称:<span>{{first.label}}</span>
-                    </div>
-                    <div class="communityId">管理单位:<span>{{first.unit}}</span>
-                    </div>
-                    <div class="communityId">单位电话:<span>{{first.unitTel}}</span>
-                    </div>
-                    <div class="communityId">单位地址:<span >{{first.unitAddress}}</span>
-                    </div>
+        <div class="infoText">
+                <div class="communityLabel" :title="first.label" style="margin-left:16px;">{{region}}名称:<span >{{first.label}}</span>
+                </div>
+                <div class="communityId" :title="first.unit">管理单位:<span>{{first.unit}}</span>
+                </div>
+                <div class="communityId" :title="first.unitTel">单位电话:<span>{{first.unitTel}}</span>
+                </div>
+                <div class="communityId" :title="first.unitAddress">单位地址:<span>{{first.unitAddress}}</span>
+                </div>
             </div>
-            <div class="infoButton" style="margin:10px 0;">
+            <div class="infoButton">
                 <el-button type="primary" @click="addManager" :disabled="addDis">新增</el-button>
                 <el-button type="primary" :disabled="disableDel" @click="deleteGuest">删除</el-button>
                 <el-button type="primary" @click="editManager" :disabled="multi">{{edital}}</el-button>
                 <div class="searchButton">
-                    <el-input icon="search" class="search" @keyup.enter.native="search" placeholder="输入用户名搜索" v-model="search_value"></el-input>
-                    <el-button type="primary" @click="search" style="margin-left:10px;">查找</el-button>
+                    <el-input prefix-icon="el-icon-search" class="search" size="medium" @keyup.enter.native="search" placeholder="输入用户名搜索" v-model="search_value"></el-input>
+                    <div style="float:right;">
+                    <el-button type="primary" @click="search" style="margin-left:16px;">查找</el-button>
                     <el-button @click="reset">重置</el-button>
+                    </div>
                 </div>
             </div>
             <div class="infoTable">
                 <el-table
                     ref="singleTable"
                     :data="tableData"
-                    height="40px"
+                    height="42px"
+                    size="mini"
                     highlight-current-row
                     @selection-change="handleSelectionChange"
                     >
@@ -68,7 +69,7 @@
                     property="userName"
                     label="登录名"
                     show-overflow-tooltip
-                    width="90">
+                    >
                     </el-table-column>
                     <el-table-column
                     property="role"
@@ -78,7 +79,7 @@
                     </el-table-column>
                     <el-table-column
                     property="areaName"
-                    width="140"
+                    width="120"
                     show-overflow-tooltip
                     label="管理区域">
                     </el-table-column>
@@ -86,13 +87,13 @@
                     property="alarmName"
                     show-overflow-tooltip
                     label="管理报警类型"
-                    width="130">
+                    width="150">
                     </el-table-column>
                      <el-table-column
                     property="name"
                     show-overflow-tooltip
                     label="姓名"
-                    width="90">
+                    >
                     </el-table-column>
                      <el-table-column
                     property="tel"
@@ -111,7 +112,7 @@
                  <el-pagination
                 @size-change="handleSizeChange"
                 @current-change="handleCurrentChange"
-                :current-page="currentPage"
+                :current-page="page"
                 :page-sizes="[20, 30, 40]"
                 :page-size="pagenum"
                 layout="total, sizes, prev, pager, next, jumper"
@@ -119,7 +120,8 @@
             </el-pagination>
             </div>
         </div>
-       <add-guest v-if="addManage" :alarmType="alarmType" @addManage="addGuestReturn" :buttonClick="buttonClick" :multipleSelection="multipleSelection[0]" :first="firstData" :edital="edital"></add-guest>
+       <add-guest v-if="addManage" :alarmType="alarmType" @addManage="addGuestReturn" :buttonClick="buttonClick" :multipleSelection="multipleSelection[0]" :first="firstData"></add-guest>
+       <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
     </div>
 </div>
 </template>
@@ -127,8 +129,9 @@
   let id = 1000;
   import AddGuest from "./AddGuest.vue"
   import Tree from "./../tree/src/tree.vue"
-      export default {
-        props:["alarmType","showType"],
+  import monitorInfo from './../BMap/MonitorInfo.vue'
+  export default {
+    props:['alarmType'],
     data() {
       return {
         data: [],
@@ -137,6 +140,7 @@
           label: 'label'
         },
         rightMenu:false,
+        gridData:[],
         left:240,
         top:459,
         node:{},
@@ -144,9 +148,8 @@
         importDialog:false,
         treeData:{},
         managerPhone:12111,
-        total:1,
+        total:0,
         page:1,
-        currentPage: 1,
         pagenum:20,
         tableData: [],
         multipleSelection: [],
@@ -178,6 +181,7 @@
         edital:"编辑",
         role:null,
         fid:null,
+        currentFlag:1,
         }
     },
     mounted(){
@@ -237,6 +241,7 @@
         //获取管理员列表
         getTableData(){
             var self = this;
+            self.currentFlag = 1;
             self.tableData = [];
             self.axios({
                 method:"get",
@@ -270,50 +275,51 @@
                 var self = this;
                 //新增管理员
                 if(b){
-                    // console.log(b);
-                if(self.buttonClick ==1){
-                    self.axios({
-                        method:"post",
-                        data:b,
-                        url:self.$iHomed("api","edit_guest")
-                    })
-                    .then((res)=>{
-                        let ret = res.data.data;
-                        console.log(res);
-                        if(ret){
-                            self.$message({
-                                message: '新增成功',
-                                type: 'success'
-                            });
-                            self.addManage  = a;
-                                //刷新列表   
-                                self.getTableData();
-                        }
-                        else{
-                            self.$alert(res.data.msg);
-                            return;
-                        };
-                    })
-                    //修改管理员
-                    }else if(self.buttonClick ==2){
-                        if(self.clickNode == b){
-                            self.addManage  = a;
-                            return false;
-                        }else{
-                            console.log(b);
-                            self.axios({
-                            method:"put",
-                            data:{
-                                "alarmType": b.alarmId,
-                                "areaId":b.areaId,
-                                "level": b.type,
-                                "mail": b.mail,
-                                "name": b.name,
-                                "tel": b.tel
-                                },
-                            url:self.$iHomed("api","change_guest")+b.id,
+                    if(self.buttonClick ==1){
+                        self.axios({
+                            method:"post",
+                            data:b,
+                            url:self.$iHomed("api","edit_guest")
                         })
-                            .then((res)=>{
+                        .then((res)=>{
+                            let ret = res.data.data;
+                            console.log(res);
+                            if(ret){
+                                self.$message({
+                                    message: '新增成功',
+                                    type: 'success'
+                                });
+                                self.addManage  = a;
+                                    //刷新列表   
+                                    self.getTableData();
+                            }
+                            else{
+                                self.$alert(res.data.msg);
+                                return;
+                            };
+                        })
+                        //修改管理员
+                        }else if(self.buttonClick ==2){
+                            console.log(self.clickNode);
+                            if(self.clickNode.alarmId == b.alarmId && self.clickNode.areaId == b.areaId &&
+                                self.clickNode.type == b.type && self.clickNode.mail == b.mail&&
+                                self.clickNode.name == b.name &&self.clickNode.tel == b.tel){
+                                self.addManage  = a;
+                                return false;
+                            }else{
+                                console.log(b);
+                                self.axios({
+                                method:"put",
+                                data:{
+                                    "alarmType": b.alarmId,
+                                    "areaId":b.areaId,
+                                    "level": b.type,
+                                    "mail": b.mail,
+                                    "name": b.name,
+                                    "tel": b.tel
+                                    },
+                                url:self.$iHomed("api","change_guest")+b.id,
+                            }).then((res)=>{
                                 console.log(res);
                                 let ret = res.data.data;
                                 if(ret){
@@ -349,43 +355,43 @@
             //删除管理员
             deleteGuest(){
                 var self = this;
-                    self.$confirm('此操作将彻底删除选中管理员，是否继续?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                        }).then(() => {
-                            var arr= [];
-                            for(let i = 0;i<self.multipleSelection.length;i++){
-                                arr.push(self.multipleSelection[i].id);
-                            }
-                            self.axios({
-                                method:"delete",
-                                url:self.$iHomed("api","edit_guest"),
-                                data:{
-                                    "longIds": arr,
-                                }
-                            })
-                            .then((res)=>{
-                                console.log(res);
-                                var ret = res.data.data;
-                                if(ret){
-                                    self.$message({
-                                        message: '删除成功',
-                                        type: 'success'
-                                    });
-                                }
-                                else{
-                                    self.$alert(res.data.msg);
-                                }
-                                //刷新列表   
-                                self.getTableData();
-                            })        
-                        }).catch(() => {
-                        this.$message({
-                            type: 'info',
-                            message: '已取消删除'
-                        });          
-                        });
+                self.$confirm('此操作将彻底删除选中管理员，是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    var arr= [];
+                    for(let i = 0;i<self.multipleSelection.length;i++){
+                        arr.push(self.multipleSelection[i].id);
+                    }
+                    self.axios({
+                        method:"delete",
+                        url:self.$iHomed("api","edit_guest"),
+                        data:{
+                            "longIds": arr,
+                        }
+                    })
+                    .then((res)=>{
+                        console.log(res);
+                        var ret = res.data.data;
+                        if(ret){
+                            self.$message({
+                                message: '删除成功',
+                                type: 'success'
+                            });
+                        }
+                        else{
+                            self.$alert(res.data.msg);
+                        }
+                        //刷新列表   
+                        self.getTableData();
+                    })        
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });             
+                });
             },
             //编辑管理员
             editManager(){
@@ -396,12 +402,12 @@
              leftClick(data,node,store,e){
                 var self = this;
                     e.preventDefault();
-                    $(".el-tree-node__content .el-tree-node__label").css("color","#000");
-                    e.target.style.color="#20A0FF";
-                    if(e.target.children[1]){
-                        e.target.children[1].style.color="#20A0FF";
-                    }
-                    if(data.type == 0){
+                $(".el-tree-node__content .el-tree-node__label").css("color","#000");
+                e.target.style.color="#20A0FF";
+                if(e.target.children[1]){
+                    e.target.children[1].style.color="#20A0FF";
+                }
+                if(data.type == 0){
                     self.region = "区域";
                     self.quyuClick = true;
                     if(data.id == localStorage.getItem("areaId")){
@@ -415,7 +421,7 @@
                     if(data.children.length != 0){
                         data.children = [];
                     }else{
-                            for(let i = 0;i < node.parent.data.children.length;i++){
+                        for(let i = 0;i < node.parent.data.children.length;i++){
                             node.parent.data.children[i].children = [];
                         }
                         //点击哪个节点显示相应的社区
@@ -444,17 +450,25 @@
              handleSizeChange(val) {
                  //看接口最大能获取多少
                 this.pagenum = val;
-                this.getTableData();
+                if(this.currentFlag ==1){
+                    this.getTableData();
+                }else{
+                    this.search();
+                }
             },
             //点击第几页
             handleCurrentChange(val) {
                 // console.log(val);
                 this.page = val;
-                this.getTableData();
+                if(this.currentFlag ==1){
+                    this.getTableData();
+                }else{
+                    this.search();
+                }
             },
             //多选框
              handleSelectionChange(val) {
-                 //过滤函数
+                 //过滤函数 获取当前不可修改信息的行
                  var fid = this.fid;
                  function filterType(a){
                      var role = localStorage.getItem("role");
@@ -525,6 +539,8 @@
             //搜索接口
             search(){
                 var self = this;
+                self.currentFlag = 2;
+                self.page = 1;
                 self.axios({
                     method:"get",
                     url:self.$iHomed("api","search_guest"),
@@ -553,85 +569,95 @@
                 })
             },
             reset(){
+                this.page = 1;
                 this.search_value= "";
                 this.getTableData();
             }      
         },
         components:{
             "add-guest":AddGuest,
-            "my-tree":Tree
+            "my-tree":Tree,
+            "monitor-info":monitorInfo
         }
       }
 </script>
 </script>
 <style lang="" scoped>
     .el-tree{
-        width:16%;
+        width:200px;
         position:absolute;
-        top:40px;
-        bottom:0;
+        top:88px;
+        bottom:140px;
         overflow-y:scroll;
         overflow-x:hidden;
+        border:1px solid #dfe6ec;
     }
-    .nav-wrapper span{
-         font-size:15px;
-    }
+   
     .infoContent{
-        position:absolute;
-        top:30px;
-        bottom:0;
-        right:0;
-        left:35%;
+        position:fixed;
+        top:64px;
+        bottom:84px;
+        right:24px;
+        left:488px;
     }
     .infoText{
-        width:96.7%;
-        height:90px;
-        margin-top:20px;
-        border:1px solid #ccc;
+        position:absolute;
+        left:0;
+        right:0;
+        height:70px;
+        margin-top:24px;
+        border-top:1px solid #dfe6ec;
+        border-bottom:1px solid #dfe6ec;
+        background:#f9fafc;
     }
     .infoText div{
         display:inline-block;
-        margin-right:80px;
         height:35px;
         line-height:35px;
-        margin-top:7px;
-        margin-left:15px;
+        margin-top:16px;
+        width:20%;
+        font-size:14px;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space: nowrap;
     }
     .infoButton{
         position:fixed;
-        top:140px;
-        left:35%;
+        top:182px;
+        left:488px;
     }
     .el-input{
         display:inline-block;
         height:30px;
         width:100px;
     }
-    .infoText span{
-        display:inline-block;
-        height:30px;
-    }
     .el-table{
-        position:fixed;
-        top:190px;
-        bottom:80px;
+        position:absolute;
+        top:178px;
+        bottom:56px;
         font-size:12px;
-        width:62.5%;
-        overflow-y:scroll;
+        border:1px solid #dfe6ec;
+        border-bottom:none;
         overflow-x:hidden;
-    }
-    .block{
-        position:fixed;
-        left:40%;
-        bottom:40px;
     }
     .content div.nav-wrapper{
         margin:0;
     }
+    .search{
+        width:200px;
+    }
+    .searchButton{
+        position:fixed;
+        top:182px;
+        right:24px;
+    }
     .el-button{
-        width:88px;
-        height:28px;
-        line-height:8px;
+        height:36px;
+        width:90px;
+        margin-left:12px;
+    }
+    .el-button:first-child{
+        margin-left:0;
     }
     .import{
         position:fixed;
@@ -646,12 +672,6 @@
         margin-top:10px;
         margin-left:35px;
     }
-    .searchButton{
-        position:fixed;
-        top:147px;
-        right:1%;
-        width:520px;
-    }
     .title{
         width:100%;
         height:40px;
@@ -661,32 +681,11 @@
         text-align:center;
         background:#20A0FF;
     }
-    .importGuest .el-button{
-        width:120px;
-        height:40px;
-        margin-left:40px;
-        margin-top:10px;
-    }
     .button{
         margin-left:30px;
     }
-    .mask{
-        position:absolute;
-        top:0;
-        bottom:0;
-        left:0;
-        right:0;
-        background:#000;
-        opacity:0.4;
-        z-index:98;
-    }
     .search{
-        width:300px;
-    }
-    .el-button{
-        width:88px;
-        height:28px;
-        line-height:8px;
+        width:200px;
     }
     .el-table tr{
         white-space: nowrap;

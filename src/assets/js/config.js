@@ -22,7 +22,6 @@ var CONFIG = {
     token: "TOKEN3120",
     // 开发模式下的默认用户角色: 1.超级管理员，2.系统管理员，3.普通用户
     role: 2,
-
     // 将公共配置放到CONFIG中暴露出去    
     globalDnsConfigVar: window.globalDnsConfigVar,
     // 提供商对象
@@ -96,94 +95,105 @@ var CONFIG = {
  *         url: "{method}_apiname"
  *     } );
  */
+var root = "http://192.168.18.100:18181/";
+// 后台地址：113.98.233.208:18181  内网192.168.18.100:18181
+// rabbitmq：104.128.92.37    端口和之前的一样，账号admin，密码root
+
 var API = {
     //登录接口
-    'auto_login': "http://192.168.18.100:18181/AlarmManage/auth/login",
+    'auto_login': root + "AlarmManage/auth/login",
     //登出接口
-    "login_out": "http://192.168.18.100:18181/AlarmManage/auth/logout",
+    "login_out": root + "AlarmManage/auth/logout",
     //获取token接口
-    "get_token":"http://access.homed.me/account/user/v2/login",
+    "get_token": "http://access.homed.me/account/user/v2/login",
     //获取地图point
-    "map_point": "http://192.168.18.100:18181/AlarmManage/alarm/index/untreated/",
+    "map_point": root + "AlarmManage/alarm/index/untreated/",
     //获取echarts图数据
-    "get_echarts":"http://192.168.18.100:18181/AlarmManage/alarm/index/perHourAlarm/",
+    "get_echarts": root + "AlarmManage/alarm/index/perHourAlarm/",
     //导出折线图数据
-    "echarts_data": "http://192.168.18.100:18181/AlarmManage/alarm/export/perHourAlarm/",
+    "echarts_data": root + "AlarmManage/alarm/export/perHourAlarm/",
     //区域导入
-    "area_import": "http://ip:port/area/getList",
+    // "area_import": root + "http://ip:port/area/getList",
     //获取区域资讯id
-    "get_news":"http://192.168.18.100:18181/AlarmManage/area/zxlm/",
+    "get_news": root + "AlarmManage/area/zxlm/",
     //监控频道导入
     "monitor_channel": "http://api.slave.homed.me:13160/monitor/channel/get_list",
     //获取监控的playtoken
-    "paly_token": "http://api.slave.homed.me/media/get_authority_info?playtype=live",
+    "paly_token": "http://slave.homed.me/media/get_authority_info?playtype=live",
+    "paly_url": "http://slave.homed.me:13160/monitor/channel/get_info",
     "mock_monitor": "http://www.easy-mock.com/mock/59ca2601e0dc663341bbb910/monitor/get_monitor",
     //待处理报警信息
-    "get_untreated": "http://192.168.18.100:18181/AlarmManage/alarm/untreated",
+    "get_untreated": root + "AlarmManage/alarm/untreated",
     //已处理报警信息
-    "get_treated": "http://192.168.18.100:18181/AlarmManage/alarm/treated",
+    "get_treated": root + "AlarmManage/alarm/treated",
     //修改待处理报警信息
-    "change_untreated": "http://192.168.18.100:18181/AlarmManage/alarm/change/",
+    "change_untreated": root + "AlarmManage/alarm/change/",
     //获取视频截图url get
-    "get_url":"http://192.168.36.126:13160/media/event/get_poster_by_time",
+    "get_url": "http://slave.homed.me:13160/media/event/get_poster_by_time",
     //待处理报警信息上报  提交
-    "put_remark": "http://192.168.18.100:18181/AlarmManage/alarm/",
+    "put_remark": root + "AlarmManage/alarm/",
     //get 通知消息
-    "edit_notify": "http://192.168.18.100:18181/AlarmManage/message",
+    "edit_notify": root + "AlarmManage/message",
     //报警类型管理
     //新增报警类型 删除报警类型
-    "add_type": "http://192.168.18.100:18181/AlarmManage/alarmType",
+    "add_type": root + "AlarmManage/alarmType",
+    //获取当前可编辑的报警类型
+    "get_alarmType": root + "AlarmManage/user/alarmtype",
     //查询报警类型列表信息
-    "alarmType_list": "http://192.168.18.100:18181/AlarmManage/alarmType/all",
+    "alarmType_list": root + "AlarmManage/alarmType/all",
     //删除或修改 报警类型 
-    "edit_type": "http://192.168.18.100:18181/AlarmManage/alarmType/",
+    "edit_type": root + "AlarmManage/alarmType/",
+    //标记正在处理 退出处理状态加cancel
+    "editing": root + "AlarmManage/alarm/handle/",
 
     //区域管理
     //添加区域/社区
-    "add_area": "http://192.168.18.100:18181/AlarmManage/area",
+    "add_area": root + "AlarmManage/area",
     //查询整个区域社区树
-    "get_treeList": "http://192.168.18.100:18181/AlarmManage/area/tree/",
+    "get_treeList": root + "AlarmManage/area/tree/",
     //删除区域、社区 修改 查看区域
-    "change_tree": "http://192.168.18.100:18181/AlarmManage/area/",
+    "change_tree": root + "AlarmManage/area/",
     //查询区域id下面的区域社区树
-    "get_list": "http://192.168.18.100:18181/AlarmManage/area/",
+    "get_list": root + "AlarmManage/area/",
     //搜索接口
-    "to_search":"",
+    "to_search": "",
 
     //STB 用户管理
     //获取用户列表get 新增用户列表post 删除delete
-    "edit_stbUser": "http://192.168.18.100:18181/AlarmManage/customer",
+    "edit_stbUser": root + "AlarmManage/customer",
     //修改 put 
-    "change_stbUser": "http://192.168.18.100:18181/AlarmManage/customer/",
+    "change_stbUser": root + "AlarmManage/customer/",
     //导入用户接口，返回结果data为导入操作错误日志地址 post
-    "user_import": "http://192.168.18.100:18181/AlarmManage/customer/import/",
+    "user_import": root + "AlarmManage/customer/import/",
     //搜索用户接口
-    "search_user":"http://192.168.18.100:18181/AlarmManage/customer/search",
+    "search_user": root + "AlarmManage/customer/search",
 
     //管理员
     //新增管理员post  获取管理员列表get 删除管理员delete
-    "edit_guest": "http://192.168.18.100:18181/AlarmManage/user",
+    "edit_guest": root + "AlarmManage/user",
     // 修改管理员put  修改管理员密码
-    "change_guest": "http://192.168.18.100:18181/AlarmManage/user/",
+    "change_guest": root + "AlarmManage/user/",
     //操作日志
-    "opeator_log": "http://192.168.18.100:18181/AlarmManage/log",
+    "opeator_log": root + "AlarmManage/log",
     //查询管理员
-    "search_guest":"http://192.168.18.100:18181/AlarmManage/user/all",
+    "search_guest": root + "AlarmManage/user/all",
 
 
     //监控管理
     //获取区域管理得table列表
-    "edit_monitor": "http://192.168.18.100:18181/AlarmManage/monitor",
+    "edit_monitor": root + "AlarmManage/monitor",
+    //获取弹出框的监控截图
+    "get_picture": root + "AlarmManage/homed/poster/",
     //监控导入
-    "import_monitor":"http://192.168.18.100:18181/AlarmManage/monitor/import/monitor",
+    "import_monitor": root + "AlarmManage/monitor/import/monitor",
     //查询未绑定摄像头
-    "unbinding_monitor":"http://192.168.18.100:18181/AlarmManage/monitor/unbinding",
+    "unbinding_monitor": root + "AlarmManage/monitor/unbinding",
     //绑定监控至区域/社区
-    "binding_monitor":"http://192.168.18.100:18181/AlarmManage/monitor/binding",
+    "binding_monitor": root + "AlarmManage/monitor/binding",
     //未绑定数据拉黑
-    "to_black":"http://192.168.18.100:18181/AlarmManage/monitor/defriend",
+    "to_black": root + "AlarmManage/monitor/defriend",
     //搜索监控
-    "monitor_search":"http://192.168.18.100:18181/AlarmManage/monitor/search",
+    "monitor_search": root + "AlarmManage/monitor/search",
 
 };
 

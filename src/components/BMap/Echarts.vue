@@ -54,7 +54,7 @@ export default {
                         str = params[0].name +"<br/>";
                         for(let i = 0; i< params.length;i++){
                             if(i == 0){
-                                str +='<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:'+params[0].color+'"></span>' + params[0].seriesName + "：" + params[0].data+"<br/>";
+                                str +='<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:'+params[0].color+'"></span>' + params[0].seriesName + "：" + params[0].data+"<br/>";
                             }else{
                                 str +='<span style="display:inline-block;width:150px;height:14px;"><span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:'+params[i].color+'"></span>' + params[i].seriesName + "：" + params[i].data+"</span>"+"<span style='display:inline-block;width:50px;height:10px;'></span>";
                                 if(i%2 == 0){
@@ -73,7 +73,7 @@ export default {
                 },
                 legend: {
                     top:5,
-                    left:1005,
+                    right:24,
                     itemHeight: 30,
                     itemWidth: 30,
                     orient: 'vertical',
@@ -141,36 +141,51 @@ export default {
                 method:"get",
                 url:self.$iHomed("api","get_echarts")+self.id,
             }).then((res)=>{
-                console.log(res.data);
+                for(let i = 0;i <res.data.data.perHourAlarm.length;i++){
+                    if(!res.data.data.perHourAlarm[i]){
+                        res.data.data.perHourAlarm[i] = 0;
+                    }
+                }
                     var root = {
-                    name:res.data.data.areaName,
-                    data: res.data.data.perHourAlarm,
-                    type:'line',
-                    showSymbol: true,
-                        },
-                        rootName = {
-                            name:res.data.data.areaName,
-                            icon: 'line'
-                        };
-                        self.option.yAxis.max = res.data.data.max >= 10 ?(res.data.data.max+10):(res.data.data.max + 1);
-                        self.option.series.push(root);
+                        name:res.data.data.areaName,
+                        data: res.data.data.perHourAlarm,
+                        type:'line',
+                        showSymbol: true,
+                    },
+                    rootName = {
+                        name:res.data.data.areaName,
+                        icon: 'line'
+                    };
+                    self.option.yAxis.max = res.data.data.max >= 10 ?(res.data.data.max+10):(res.data.data.max + 1);
+                    self.option.series.push(root);
                         //  self.option.legend.data.push(rootName);
-                    if(res.data.data.children.length > 0){
-                        for(let i = 0 ;i <res.data.data.children.length;i++){
-                            var y_child = {
-                                name:res.data.data.children[i].areaName,
-                                data: res.data.data.children[i].perHourAlarm,
-                                type:'line',
-                                showSymbol: true,
+                    if(res.data.data.children){
+                        if(res.data.data.children.length > 0){
+                            for(let i = 0 ;i <res.data.data.children.length;i++){
+                                var y_child = {
+                                    name:res.data.data.children[i].areaName,
+                                    data: res.data.data.children[i].perHourAlarm,
+                                    type:'line',
+                                    showSymbol: false,
+                                    itemStyle: {normal:{
+                                        color: "transparent",
+                                        // opacity: 0
+                                    },
+                                    emphasis:{
+                                        color: "transparent",
+                                        // opacity: 0
+                                    }},
+                                }
+                                var y_float = {
+                                    name:res.data.data.children[i].areaName,
+                                    icon: 'line'
+                                }
+                                self.option.series.push(y_child);
+                                //  self.option.legend.data.push(y_float);
                             }
-                            var y_float = {
-                                name:res.data.data.children[i].areaName,
-                                icon: 'line'
-                            }
-                            self.option.series.push(y_child);
-                            //  self.option.legend.data.push(y_float);
                         }
                     }
+                    
                     self.chart.setOption(self.option,true);
                 
             })
@@ -201,7 +216,6 @@ export default {
     height:550px;
     background:#fff;
     margin-top:100px;
-    border-left:1px solid #ccc;
 }
 canvas{
     width:90%;
@@ -238,15 +252,11 @@ canvas{
     background-color: #20A0FF!important;
     color: #fff!important;
 }
-.el-button{
-        width:88px;
-        height:28px;
-        line-height:8px;
-    }
+
 .exportData{
     position:absolute;
-    top:6px;
-    right:240px;
+    top:88px;
+    left:0;
     width:110px;
     z-index:99;
 }

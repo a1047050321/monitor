@@ -1,15 +1,5 @@
 <template>
-	<el-menu mode="horizontal">
-	   <!-- <el-submenu index="1">
-	        <template slot="title">{{ headerParam.systemname }}</template>
-	        <template v-for="id in headerParam.systemids">               
-	          	<el-menu-item index="id" >
-	          	</el-menu-item>                
-	        </template>               
-	     </el-submenu> !-->
-		 <div class="headerBar">报警系统</div>
-	  </el-menu>
-	</div>
+	<div class="headerBar">报警系统</div>
 </template>
 
 <script>	
@@ -21,13 +11,14 @@
 	}
 </script>
 
-<style>
+<style scoped>
 	.headerBar{
 		width:100%;
-		height:60px;
-		line-height:60px;
-		font-size:24px;
+		height:64px;
+		line-height:64px;
+		font-size:20px;
 		font-weight:900;
+		margin-left:-1px;
 		color: #fff;	
 		text-align: center;
 	}
@@ -37,31 +28,5 @@
 	.menu-wrapper .menu-header,
 	.menu-wrapper .el-menu--horizontal .el-submenu__title:hover {
 		background-color: #20A0FF;
-	}
-
-	.menu-header .el-submenu__title {
-		width: 100%;
-		font-size: 20px;
-		color: #fff;	
-	}
-
-	.menu-header > .el-submenu {
-		width: 100%;
-		text-align: center;
-	}
-
-	.menu-header > .el-submenu > .el-menu {
-		text-align: left;
-		max-height: 400px;
-		overflow-y: auto;
-	}
-
-	.menu-header > .el-submenu > .el-menu img {
-		vertical-align: middle;
-	}
-
-	.menu-header > .el-submenu > .el-menu a {
-		text-decoration: none;
-		font-size: 16px;
 	}
 </style>

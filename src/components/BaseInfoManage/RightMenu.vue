@@ -1,18 +1,18 @@
 <template>
 <div>
     <div class="buttonRight" v-show="rightMenu && treeData.type == 0" @mouseleave="mouseleave" >
-    <el-button icon="plus" @click="addSer">增加区域</el-button>
+    <el-button icon="el-icon-plus" @click="addSer">增加区域</el-button>
         <br/>
-         <el-button icon="plus" @click="add">增加社区</el-button>
+         <el-button icon="el-icon-plus" @click="add">增加社区</el-button>
         <br/>
-        <el-button icon="delete2" @click="deleteTree">删除</el-button>
+        <el-button icon="el-icon-delete" @click="deleteTree">删除</el-button>
         <br/>
-        <el-button icon="edit" @click.prevent="edit">修改</el-button>
+        <el-button icon="el-icon-edit" @click.prevent="edit">修改</el-button>
     </div>
      <div class="buttonRight" v-show="rightMenu && treeData.type == 1" @mouseleave="mouseleave">
-        <el-button icon="delete2" @click="deleteTree">删除</el-button>
+        <el-button icon="el-icon-delete" @click="deleteTree">删除</el-button>
         <br/>
-        <el-button icon="edit" @click="edit">修改</el-button>
+        <el-button icon="el-icon-edit" @click="edit">修改</el-button>
     </div>
 </div>
 </template>
@@ -76,13 +76,13 @@
     .buttonRight{
         position:fixed;
         width:122px;
-        border:1px solid #ccc;
+        border:1px solid #dfe6ec;
         z-index:99;
-
     }
     .buttonRight .el-button{
         width:120px;
+        height:36px;
         border-radius:0;
-        border-bottom:1px solid #ccc;
+        border-bottom:1px solid #dfe6ec;
     }
 </style>

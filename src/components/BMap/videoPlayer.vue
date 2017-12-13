@@ -10,10 +10,11 @@
 </style>
 <script>
 export default {
+    prop:["url"],
     data() {
         return {
             initFlag: false,
-            pid:"4202006972"
+            pid:"4202006972",
         }
     },
     methods: {
@@ -32,10 +33,10 @@ export default {
     computed: {
         getProgramID: function () {
             if (this._isMounted) {// 触发播放路径更新
-                SewisePlayer.toPlay(this.getPlayUrl(), "视频会议", 0, true);
+                SewisePlayer.toPlay(this.url, "视频会议", 0, true);
             }
 
-            return this.pid;
+            return this.url;
         }
     },
     mounted() {
