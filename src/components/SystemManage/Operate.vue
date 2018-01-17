@@ -13,6 +13,7 @@
                 <div class="searchButton">
                     <el-date-picker
                     v-model="value1"
+                    id="time1"
                     size="medium"
                     type="datetime"
                     style="margin-right:4px;
@@ -23,6 +24,7 @@
                     <el-date-picker
                     v-model="value2"
                     size="medium"
+                    id="time2"
                     style="margin-left:4px;
                     width:164px;"
                     type="datetime"
@@ -64,14 +66,14 @@
         :total="total">
         </el-pagination>
     </div>    
-    <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
+    <monitor-info :alarmType="alarmType" :configData="configData" :current="1"></monitor-info>
 </div>
 </template>
 <script>
     import axios from 'axios'
     import MonitorInfo from "./../BMap/MonitorInfo.vue"
     export default{
-        props:["alarmType"],
+        props:["alarmType","configData"],
         data(){
             return {
                 alert: true,
@@ -85,7 +87,8 @@
                 value2:"",
                 searcher:"",
                 endTime:"",
-                startTime:""
+                startTime:"",
+                clickSearch:false,
 
             }
         },
@@ -110,15 +113,14 @@
                     params:{
                          currentPage:self.pageidx,
                          pageSize:self.pagenum,
-                         search:self.searcher,
-                         endTime:self.endTime,
-                         beginTime:self.startTime,
+                         search:this.clickSearch?self.searcher:"",
+                         endTime:this.clickSearch?self.endTime:"",
+                         beginTime:this.clickSearch?self.startTime:"",
                     }
                 }).then(function(res){
                     var datalist = res.data.data;
-                    console.log(datalist);
-                        self.total = Number(datalist.total);
-                        self.tableData = datalist.data;
+                    self.total = Number(datalist.total);
+                    self.tableData = datalist.data;
                 })
             },
              //选择显示数量
@@ -138,6 +140,7 @@
                 this.multipleSelection = val;
             },
             search(){
+                this.clickSearch = true;
                 this.pageidx = 1;
                 this.getData();
             },
@@ -149,6 +152,7 @@
                 this.value2 = "";
                 this.endTime = "";
                 this.getData();
+                this.clickSearch = false;
             }
         },
         components:{

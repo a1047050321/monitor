@@ -9,7 +9,7 @@
                 <el-breadcrumb-item>监控查看</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        <div class="mask" title="当前不可点击！"></div>
+        <!--<div class="mask" title="当前不可点击！"></div> -->
         <div class="buttonHandle" style="margin:24px 0;" v-if="!type">
            <ul class="handleOpeator">
             <li class="call">
@@ -31,20 +31,6 @@
         </div>
         <div class="player">
             <div class="info">报警人信息:{{row.name +"  "+ row.createDateTran}}</div>
-            <!--<div class="mp4">
-                <video-player  class="video-player-box"
-                    ref="videoPlayer"
-                    :options="playerOptions"
-                    :playsinline="true"
-                    customEventName="customstatechangedeventname"
-                    @play="onPlayerPlay($event)"
-                    @pause="onPlayerPause($event)"
-                    @ended="onPlayerEnded($event)"
-                    @statechanged="playerStateChanged($event)"
-                    @ready="playerReadied">
-                </video-player>
-            </div>
-            -->
             <div id="myPlayer" :data-url="getUrl"></div>
             <div class="monitorInfo" v-show="!buttonShow">
                 <span class="icon-success" style="position:absolute;left:50px;top:60px;"></span>
@@ -63,8 +49,9 @@
 <script>
     import NoMonitor from './NoMonitor'
     import EditalInfo from "./EditalInfo"
+    import bus from "../../assets/js/bus"
     export default {
-        props: ["moniInfoShow", "alarmType"],
+        props: ["moniInfoShow", "alarmType","configData"],
         data() {
             return {
                 row: {},
@@ -81,24 +68,14 @@
                 first:false,
                 _isMounted:false,
                 url:"",
+                playUrl:"",
+                startTime:null,
+                endTime:null,
                 type:1,
-                rowNext:{}
-                // playerOptions: {
-                // // videojs options
-                // muted: true,
-                // language: 'en',
-                // playbackRates: [2.0, 4.0, 6.0],
-                // sources: [
-                //     // {
-                // //     type: "video/mp4",
-                // //     src: "https://cdn.theguardian.tv/webM/2015/07/20/150716YesMen_synd_768k_vp8.webm"
-                // // },
-                // {
-                //         type: "application/x-mpegURL",
-                //         src: "http://httpdvb.slave.homed.me:13164/playurl?accesstoken=R59A3E95FU508C6023KB2D06C01I6F18A8C0P0MF430AWDAD92CC0EF1&programid=4202006972&playtype=live&playtoken=ABCDEFG&protocol=hls"
-                // }],
-                // poster: "",
-                // }
+                rowNext:{},
+                index:1,
+                flag:false,
+                getPlayToken:"",
             }
         },
         components: {
@@ -128,6 +105,31 @@
                         }else{
                             SewisePlayer.toPlay(this.url,"视频",0, true);
                         }
+                        //定时器
+                        if(!this.type){
+                            setTimeout(function() {
+                                if(!self.flag){
+                                    //把状态改为非处理
+                                    self.$message({
+                                        message: '当前操作已超时，请重新处理',
+                                        type: 'warning'
+                                    });
+                                    self.axios({
+                                        method:"post",
+                                        url:self.$iHomed("api","editing")+newValue.id+"/cancel",
+                                    }).then((res2)=>{
+                                        if(res2.data.code == 0){
+                                            console.log("标记解除");
+                                            self.flag = true;
+                                            self.$router.push({
+                                                path: "/callManage/pending",
+                                                replace: true
+                                            });
+                                        }
+                                    })
+                                }
+                            }, this.setTime*1000);
+                        }
                         SewisePlayer.onPlayTime(function(time, id) {
                             $(".end").mouseup(function() {
                                 self.time = time;
@@ -141,6 +143,39 @@
                 },
                 deep: true
             },
+            '$route.path'(value) {
+                console.log(value);
+            },
+            configData:{
+                handler(newValue, oldValue) {
+                    if(newValue.homedMonitorTerminalPlayUrl){
+                        var row = this.$route.query.row;
+                        this.type  = this.$route.query.type;
+                        var btnS = this.$route.query.btnS;
+                        this.status = this.$route.query.status;
+                        this.btnS = btnS;
+                        if (this.type) {
+                            var myPlayer = document.getElementById("myPlayer");
+                            $(".player").css("top", "64px");
+                            $(".mask").css("width", "0");
+                        }
+                        //row是点击的信息
+                        if (row) {
+                            this.row = JSON.parse(row);
+                        }
+                        this.playUrl = newValue.homedMonitorTerminalPlayUrl;
+                        this.startTime = newValue.lookBackTimeSpaceStartTime;
+                        this.endTime = newValue.lookBackTimeSpaceEndTime;
+                        this.setTime = newValue.handleTimeout;
+                        this.getPlayToken = newValue.homedMonitorTerminalGetAuthorityInfoUrl;
+                        if(!this.row.monitorUrl ){
+                            this.getToken(this.playUrl,this.getPlayToken,this.startTime,this.endTime);
+                        }
+                    }
+                },
+                deep:true,
+                immediate:true
+            }
         },
         methods: {
             changeUrl(){
@@ -172,38 +207,32 @@
                 this.get_next();
             },
             //获取play_token
-            getToken() {
+            getToken(url,getPlayToken,startTime,endTime) {
                 var self = this;
                 console.log(self.row);
                 if (!self.row.monitorUrl) {
                     self.axios({
                         method: "get",
-                        url: self.$iHomed("api", "paly_url"),
+                        url: getPlayToken,
                         params: {
                             accesstoken: localStorage.getItem("token"),
-                            chnlid: self.row.monitor
+                            programid: self.row.monitor,
+                            playtype:"live"
                         },
                         withCredentials: false
-                    }).then((res) => {
-                        // console.log(res.data.demand_url[0]);
-                        self.axios({
-                            method: "get",
-                            url: self.$iHomed("api", "paly_token"),
-                            params: {
-                                accesstoken: localStorage.getItem("token"),
-                                programid: self.row.monitor
-                            },
-                            withCredentials: false
-                        }).then((response) => {
-                            // console.log(response.data);
-                            if (response.data.ret == 0) {
-                                self.row.monitorUrl = res.data.demand_url[0] + "?accesstoken=" + localStorage.getItem("token") + "&protocol=hls&playtype=lookback&auth=no&rate=org&programid=" + self.row.monitor + "&playtoken=" + response.data.play_token + "&starttime=" +
-                                    self.utcChange(Number(self.row.createDate) - 60000) + "&endtime=" + self.utcChange(Number(self.row.createDate) + 400000);
-                                // this.row.demandurl = url;
-                                self.url = self.row.monitorUrl;
-                                
-                            }
-                        })
+                    }).then((response) => {
+                        // console.log(response.data);
+                        if (response.data.ret == 0) {
+                            var setTime = self.utcChange(Number(self.row.createDate) + endTime*1000);
+                            var nowTime = self.utcChange(self.dateTranslate(new Date()))-200;
+                            var finalTime = nowTime+200 >= setTime ? setTime :nowTime;
+                            // console.log(self.utcChange(self.dateTranslate(new Date())));
+                            // console.log(self.utcChange(self.dateTranslate(new Date()))-200);
+                            self.row.monitorUrl = url + "?accesstoken=" + localStorage.getItem("token") + "&protocol=hls&playtype=lookback&auth=no&rate=org&programid=" + self.row.monitor + "&playtoken=" + response.data.play_token + "&starttime=" +
+                                self.utcChange(Number(self.row.createDate) - startTime*1000) + "&endtime=" + finalTime;
+                            // this.row.demandurl = url;
+                            self.url = self.row.monitorUrl; 
+                        }
                     })
                 }
             },
@@ -264,6 +293,7 @@
                     console.log(res.data);
                     if(res.data.code == 0){
                         console.log("标记解除");
+                        self.flag = true;
                     }
                 })
             },
@@ -271,28 +301,28 @@
             get_next(){
                  var self = this;
                 this.type = self.$route.query.type;
-                var index = 0;
                 //处理按钮
                 if (!this.type ) {
                     self.axios({
                             url: self.$iHomed("api", "get_untreated"),
                             method: "get",
                             params: {
-                                currentPage:index++,
+                                currentPage:this.index,
                                 pageSize: 1,
                             }
                         }).then((res) => {
+                            console.log(res.data.data.data);
                             if (res.data.data.data) {
                                 self.axios({
                                 method:"post",
-                                url:self.$iHomed("api","editing")+res.data.data.data[index-1].id,
+                                url:self.$iHomed("api","editing")+res.data.data.data[this.index-1].id,
                                 }).then((res1)=>{
                                     //当前未处理状态
                                     if(res1.data.code == 0){
                                         console.log("标记成功");
                                         //定时器
                                         setTimeout(function() {
-                                            if(!self.liClick){
+                                            if(!self.flag){
                                                 //把状态改为非处理
                                                 self.$message({
                                                     message: '当前操作已超时，请重新处理',
@@ -300,10 +330,11 @@
                                                 });
                                                 self.axios({
                                                     method:"post",
-                                                    url:self.$iHomed("api","editing")+res.data.data.data[index-1].id+"/cancel",
+                                                    url:self.$iHomed("api","editing")+res.data.data.data[this.index-1].id+"/cancel",
                                                 }).then((res2)=>{
                                                     if(res2.data.code == 0){
                                                         console.log("标记解除");
+                                                        self.flag = true;
                                                         self.$router.push({
                                                             path: "/callManage/pending",
                                                             replace: true
@@ -311,9 +342,9 @@
                                                     }
                                                 })
                                             }
-                                        }, 120000);
-                                        if(res.data.data.data[index-1].monitor){
-                                            var datalist = res.data.data.data[index-1];
+                                        }, this.setTime*1000);
+                                        if(res.data.data.data[this.index-1].monitor){
+                                            var datalist = res.data.data.data[this.index-1];
                                             if (!datalist.terminalType) {
                                                 datalist.terminalType = "无";
                                             }
@@ -321,17 +352,26 @@
                                             datalist.pendDate = new Date(datalist.pendDate).toLocaleDateString() + " " + new Date(datalist.pendDate).toLocaleTimeString();
                                             datalist.reportDate = new Date(datalist.reportDate).toLocaleDateString() + " " + new Date(datalist.reportDate).toLocaleTimeString();
                                             self.row = datalist;
-                                            self.getToken();
+                                            self.getToken(this.playUrl,this.getPlayToken,this.startTime,this.endTime);
                                         }else{
-                                            self.$router.push({
-                                                path: "/callManage/pending",
-                                                replace: true
-                                            });
+                                            self.axios({
+                                                method:"post",
+                                                url:self.$iHomed("api","editing")+res.data.data.data[this.index-1].id+"/cancel",
+                                            }).then((res2)=>{
+                                                if(res2.data.code == 0){
+                                                    console.log("标记解除");
+                                                    self.flag = true;
+                                                    self.$router.push({
+                                                        path: "/callManage/pending",
+                                                        replace: true
+                                                    });
+                                                }
+                                            })
                                         }
                                     }
                                     //有人处理
                                     else {
-                                        index++;
+                                        this.index++;
                                         this.get_next();
                                     }
                                 })
@@ -360,12 +400,17 @@
             }
         },
         mounted() {
+            var self = this;
             var row = this.$route.query.row;
             this.type  = this.$route.query.type;
             var btnS = this.$route.query.btnS;
             this.status = this.$route.query.status;
             this.btnS = btnS;
-            if (this.type ) {
+            history.pushState(null, null, document.URL);
+            window.addEventListener('popstate', function() {
+                history.pushState(null, null, document.URL);
+            });
+            if (this.type) {
                 var myPlayer = document.getElementById("myPlayer");
                 $(".player").css("top", "64px");
                 $(".mask").css("width", "0");
@@ -373,15 +418,26 @@
             //row是点击的信息
             if (row) {
                 this.row = JSON.parse(row);
-                console.log(this.row);
+                // console.log(this.row);
             }
-            this.getToken();
+            bus.$off("out").$on("out",function(a){
+                this.flag = a;
+                console.log(self.row);
+                var row = self.$route.query.row;
+                row = JSON.parse(row);
+                self.axios({
+                    method:"post",
+                    url:self.$iHomed("api","editing")+row.id+"/cancel",
+                }).then((res)=>{
+                    console.log(res.data);
+                    if(res.data.code == 0){
+                        console.log("标记解除");
+                        self.flag = true;
+                    }
+                })
+            })
             //获取下一个数据
-            // this.playerOptions.sources = [{}];
             this.ulbtnClick();
-            
-            
-           
         }
     }
 </script>

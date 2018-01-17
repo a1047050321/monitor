@@ -71,14 +71,14 @@
             </el-pagination>
             </div>
         <add-callType v-if="addType" :mode="mode" @addType="typeChange" @newInfo="AddInfo"></add-callType>
-        <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
+        <monitor-info :alarmType="alarmType"  :configData="configData"  :current="1"></monitor-info>
 </div>
 </template>
 <script>
     import AddCallType from './AddCallType'
     import monitorInfo from "./MonitorInfo.vue"
     export default {
-        props:["alarmType"],
+        props:["alarmType","configData"],
         data() {
             return {
                 tableData: [],

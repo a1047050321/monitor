@@ -8,7 +8,7 @@
         <menu-content :contentParam="contentParam" class="menu-content"></menu-content>
       </div>
       <div class="content-wrapper">
-          <router-view  :showType="showType" :alarmType="alarmType" @callType="alarmChange" :newAlarm="newAlarm">
+          <router-view  :showType="showType" :alarmType="alarmType"  @callType="alarmChange" :newAlarm="newAlarm" :configData="configData">
           </router-view>
       </div>
     </el-row>
@@ -45,6 +45,7 @@ export default {
       alarmType:[],
       showType:{},
       newAlarm:{},
+      configData:{},
     }
   },
   mounted() {
@@ -56,6 +57,7 @@ export default {
     };
     
     this.getAlarm();
+    this.getConfig();
   },
   methods:{
      //获取该管理员报警类型信息
@@ -71,7 +73,6 @@ export default {
               })
               .then((res)=>{
                   res = res.data.data;
-                  console.log(res);
                   for(let i = 0;i<res.data.length;i++){
                       self.alarmType.push({
                           value:res.data[i].id,
@@ -83,14 +84,23 @@ export default {
                   // self.$store.commit("ALARMTYPE",self.alarmType);
               })
         },
+        //获取配置信息
+        getConfig(){
+            this.axios({
+                method: "get",
+                url: this.$iHomed("api", "get_web")
+            }).then((res) => {
+                this.configData = res.data.data;
+            })
+        },
         alarmChange(a,b){
-          this.showType = a;
-          this.alarmType = b;
+            this.showType = a;
+            this.alarmType = b;
         }
   }
   }
 </script>
-<style>
+<style scoped>
 .menu-header{
   height:100%;
 }

@@ -1,20 +1,28 @@
 <template>
-<div class="background-image">
-  <el-form :model="loginData" :rules="rules" ref="loginData" label-position="left" label-width="0px" class="demo-ruleForm login-container">
-    <el-form-item prop="name">
-      <span>登录名</span><el-input type="text" ref="input" autofocus @change="userName" v-model="loginData.name" @keyup.enter.native="handleSubmit" auto-complete="off" placeholder="请输入账号"></el-input>
-    </el-form-item>
-    <el-form-item prop="password">
-      <span>登陆密码</span><el-input type="password" v-model="loginData.password" @keyup.enter.native="handleSubmit" auto-complete="off" placeholder="请输入密码"></el-input>
-    </el-form-item>
-    <!--<el-form-item prop="rememberMe">
-     <span>记住密码</span><el-switch v-model="loginData.rememberMe" on-text="" off-text="" style="margin-left:20px;"></el-switch>
-        </el-form-item> -->
-  <el-form-item style="width:100%;">
-      <el-button type="primary" @click.native.prevent="handleSubmit" :loading="logining">登录</el-button>
-      <!--<el-button @click.native.prevent="handleReset2">重置</el-button>-->
-    </el-form-item>
-  </el-form>
+<div class="content">
+  <div class="background-image"></div>
+    <div class="right">
+      <h1 style="color:#20a0ff;margin-top:88px;font-size:28px;font-family:'Microsoft YaHei'">雪亮工程</h1>
+       <el-form :model="loginData" :rules="rules" ref="loginData" label-position="left" label-width="0px" class="demo-ruleForm login-container">
+      <el-form-item prop="name">
+        <el-input type="text" ref="input" autofocus @change="userName" v-model="loginData.name" @keyup.enter.native="handleSubmit" auto-complete="off" placeholder="用户名" style="margin-top:100px;"></el-input>
+      </el-form-item>
+      <el-form-item prop="password">
+        <el-input type="password" v-model="loginData.password" @keyup.enter.native="handleSubmit" auto-complete="off" placeholder="密码"></el-input>
+      </el-form-item>
+      <!--<el-form-item prop="rememberMe">
+      <span>记住密码</span><el-switch v-model="loginData.rememberMe" on-text="" off-text="" style="margin-left:20px;"></el-switch>
+          </el-form-item> -->
+    <el-form-item style="width:100%;text-align:left;">
+        <el-button type="primary" @click.native.prevent="handleSubmit" :loading="logining">登录</el-button>
+        <!--<el-button @click.native.prevent="handleReset2">重置</el-button>-->
+      </el-form-item>
+    </el-form>
+     <div class="foot" style="background:#fff">
+		    <p class="first">版权所有 &copy; <span class="syear"></span>-<span class="cyear">&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;<span class="company">深圳市茁壮网络股份有限公司</span>&nbsp;<span class="record">粤ICP备12069260</span></p>
+        <p>Copyright &copy; <span class="syear"></span>-<span class="cyear">&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;<span class="companyENG">iPanel.TV Inc.</span>,All Rights Reserved</p>
+		  </div>
+    </div>
   </div>
 </template>
 <script>
@@ -43,6 +51,13 @@
     },
     mounted(){
       // console.log(this.$refs['input'].$el.childNodes[2].focus());
+      // 版权信息配置
+        $('.syear').html(COPYRIGHT.createYear);
+        $('.cyear').html((new Date()).getFullYear());
+        $('.company').html(COPYRIGHT.companyName);
+        $('.companyENG').html(COPYRIGHT.companyEnglishName);
+        $('.record').html(COPYRIGHT.recordNumber);
+        this.logining = false;
     },
     methods: {
         userName(a){
@@ -71,6 +86,7 @@
             }
           var url = this.$iHomed("api","auto_login");
           this.loginData.password = md5(this.loginData.password);
+          this.logining = true;
           self.axios({
             url:url,
             method:"post",
@@ -102,18 +118,39 @@
             }
             else{
               self.$alert(res.data.msg);
+              this.logining = false;
+              this.loginData = {
+                name: '',
+                password: '',
+                rememberMe:false,
+              };
             }           
             }).catch((err) => {
                     console.log(err);
                     self.$alert("登陆失败！");
+                    this.logining = false;
+                    this.loginData = {
+                      name: '',
+                      password: '',
+                      rememberMe:false,
+                    };
+
           })
         }
-  }
+    }
   }
 </script>
 
 <style  scoped>
+.content{
+  width:100%;
+  height:100%;
 
+}
+.el-form{
+  padding:0;
+  margin:0;
+}
 .title {
       position:absolute;
       top:100px;
@@ -125,39 +162,46 @@
   .login-container {
     /* box-shadow: 0 0px 8px 0 rgba(0, 0, 0, 0.06), 0 1px 0px 0 rgba(0, 0, 0, 0.02); */
     position: fixed;
-    top: 300px;
-    left: 630px;
+    top: 100px;
+    right: 24px;
     border-radius: 5px;
     background-clip: padding-box;
-    width: 366px;
     height: 200px;
     padding: 35px 30px 0 0;
-    background: #fff;
   }
     .remember {
       margin: 0px 0px 35px 0px;
     }
   .el-input{
     display:inline-block;
-    width:250px;
-    margin-left:20px;
+    width:334px;
+    height:40px;
+    margin:0 auto;
   }
   .el-button{
-    margin-left:73%;
-    margin-top:18px;
-      width:88px;
-  }
-  .el-form-item__content{
-    margin-bottom:22px;
-  }
-  span{
-      display:inline-block;
-      width:64px;
+    width:100px;
+    height:38px;
   }
   .background-image {
-    width: 100%;
-    height: 100%;
-    background: url("http://ww4.sinaimg.cn/large/0060lm7Tly1fm08355rx3j31400nmaaa.jpg");
+    position:fixed;
+    top:0;
+    right:430px;
+    left:0;
+    bottom:0;
+    background: url("http://ww3.sinaimg.cn/large/0060lm7Tly1fmn0g2shqsj310i0p07gc.jpg") no-repeat;
+}
+.right{
+  width:430px;
+  height:100%;
+  float:right;
+  text-align:center;
+}
+.foot {
+  width:430px;
+  font-size:12px;
+  position: absolute;
+  bottom: 24px;
+  text-align: center;
 }
 
 </style>

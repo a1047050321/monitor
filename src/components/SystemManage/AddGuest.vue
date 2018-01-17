@@ -86,6 +86,15 @@
                 <div><span class="icon-must"></span>邮箱</div>
                 <el-input v-model="newGuest.mail" ref="mail"></el-input>
             </div>
+            <div class="content-box1" style="font-size:12px;">
+                <div>设备ID<span style="font-size:12px;color:red">(管理员有电视的填，非必填)</span>:</div>
+                 <!--<el-radio v-model="newGuest.codeType" label="ca" style="margin-left:30%;"><span style="font-size:12px;">CA卡号</span></el-radio>
+                <el-radio v-model="newGuest.codeType" label="id" style="margin-left:10%;"><span style="font-size:12px;">盒子ID</span></el-radio>
+                <div v-if="newGuest.codeType !=''">
+                </div>
+                -->
+                    <el-input v-model="newGuest.code"></el-input>
+            </div>
         </div>
         <div class="editalInfo"  v-if="buttonClick ==2 && multipleSelection">
             <div class="content-box1">
@@ -94,7 +103,7 @@
             </div>
             <div class="content-box1">
                 <div>登录密码</div>
-                <el-input v-model="disabled" disabled></el-input>
+                <el-input v-model="psd" disabled></el-input>
             </div>
             <div class="content-box1">
                 <div style="margin-top:16px;">管理区域</div>
@@ -171,6 +180,15 @@
                 <div>邮箱</div>
                 <el-input v-model="multipleSelection.mail" :disabled="tongJi"></el-input>
             </div>
+             <div class="content-box1">
+                <div>设备ID<span style="font-size:12px;color:red">(管理员有电视的填，非必填)</span>:</div>
+                <!--<el-radio v-model="newGuest.codeType" label="ca" style="margin-left:30%;"><span style="font-size:12px;">CA卡号</span></el-radio>
+                <el-radio v-model="newGuest.codeType" label="id" style="margin-left:10%;"><span style="font-size:12px;">盒子ID</span></el-radio>
+                <div v-if="newGuest.codeType !=''">
+                </div>
+                -->
+                    <el-input v-model="multipleSelection.code" :disabled="tongJi"></el-input>
+            </div>
         </div>
         <div class="confirm" style="text-align:right;margin:24px;">
             <el-button @click="cancel">取消</el-button>
@@ -195,11 +213,13 @@
                     "name": "",
                     "password": "",
                     "tel": null,
-                    "username": ""
+                    "username": "",
+                    codeType:"ca",
+                    code:""
                 },
                 rootId: [],
                 quan: false,
-                disabled: "*********",
+                psd: "*********",
                 guests: [{
                     value: 10,
                     label: "普通管理员"
@@ -231,6 +251,16 @@
                 isMore: false,
                 edital: "",
                 fid:null,
+            }
+        },
+        directives: {
+            focus: {
+                inserted: function (el, {value}) {
+                    if (value) {
+                        console.log(el);
+                        el.focus();
+                    }
+                }
             }
         },
         watch: {
@@ -284,10 +314,8 @@
                 handler(newValue, oldValue) {
                     console.log(newValue);　　　　　　
                     for (let p in newValue) {
-                        if (p != "areaId" && p != "alarmType") {
+                        if (p != "areaId" && p != "alarmType" && p !="code" && p !="codeType") {
                             if (newValue[p]) {
-                                console.log(p);
-                                console.log(this.$refs[p]);
                                 this.$refs[p].$el.style.border = "none";
                             }
                         } else if (p == "alarmType" && newValue[p].length != 0) {
@@ -764,7 +792,7 @@
     
     .content {
         position: fixed;
-        top: 100px;
+        top: 64px;
         left: 35%;
         width: 30%;
         height: 506px;

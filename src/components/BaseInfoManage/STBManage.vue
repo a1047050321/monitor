@@ -39,7 +39,7 @@
                 <el-button type="primary" :disabled="length" @click="delStbUser">删除</el-button>
                 <el-button type="primary" @click='importData' :loading="quyuClick1" :disabled="quyuClick">导入</el-button>
                  <div class="searchButton">
-                    <el-input prefix-icon="el-icon-search" class="search" size="medium" @keyup.enter.native="search" placeholder="输入用户名搜索" v-model="search_value"></el-input>
+                    <el-input prefix-icon="el-icon-search" class="search" size="medium" @keyup.enter.native="search" placeholder="输入用户名、姓名、电话、智能卡号、机顶盒序列号搜索" v-model="search_value"></el-input>
                     <div style="float:right;">
                     <el-button type="primary" @click="search" style="margin-left:16px;">查找</el-button>
                     <el-button @click="reset">重置</el-button>
@@ -123,7 +123,7 @@
         </div>
         <right-menu @rightMenu="change" :rightMenu="rightMenu" :left="left" :top="top" :node="node" :treeData="treeData"></right-menu>
         <add-dialog @addSon="cancelAddSon" :parentLabel="parentLabel" :parentId="parentId" v-if="addSon" :mode="mode" :multipleSelection="stbUser" :treeData="treeData" :addName="addName"></add-dialog>
-        <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
+        <monitor-info :alarmType="alarmType" :configData="configData" :current="1"></monitor-info>
     </div>
     <div style="position:fixed;top:50%;left:50%;" v-if="importDialog">
         <form>
@@ -149,12 +149,13 @@
 </template>
 <script>
     let id = 1000;
+    import $ from "jquery"
     import RightMenu from "./RightMenu.vue"
     import AddDialog from "./AddDialog.vue"
-    import Tree from "./../tree/src/tree.vue"
+    import Tree from "../tree/src/tree.vue"
     import monitorInfo from "./../BMap/MonitorInfo.vue"
     export default {
-        props:['alarmType'],
+        props:['alarmType',"configData"],
         data() {
         return {
             data:[],
@@ -187,6 +188,7 @@
             length:true,
             multi:true,
             first:{},
+            firstIn:false,
             quyuClick:true,
             quyuClick1:false,
             all:{},
@@ -529,7 +531,7 @@
             },
             //下载模板重定向
             download(){
-                window.location = "http://192.168.18.100:18181/AlarmManage/import_customer.xlsx";
+                window.location = this.$iHomed("api","upload");
             },
             //上传文件
             getFile(event) {
@@ -592,7 +594,10 @@
             search(){
                 var self = this;
                 self.dataFlag = 2;
-                self.page = 1;
+                if(!this.firstIn){
+                    self.page = 1;
+                    this.firstIn = true;
+                }
                 self.axios({
                     method:"get",
                     url:self.$iHomed("api","search_user"),

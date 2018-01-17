@@ -11,7 +11,7 @@
     <div class="second" :title="second" v-if="second">{{second}}</div>
     <div class="third" :title="third" v-if="third">{{third}}</div>
 </div>
-    <monitor-info :moniInfoShow="moniInfoShow" :alarmType="alarmType" :current="1"></monitor-info>
+    <monitor-info :moniInfoShow="moniInfoShow" :alarmType="alarmType" :configData="configData"  :current="1"></monitor-info>
 </div>
 </template>
 <script>
@@ -71,16 +71,16 @@
                 type: Array,
                 default: []
             },
-
+            configData: {
+                type: Object,
+                default: {}
+            },
         },
         mounted() {
             this.areaId = localStorage.getItem("areaId");
             this.role = localStorage.getItem("role");
             this.mapShow();
-            this.newAlarmData();
-            if (localStorage.getItem("role")) {
-                this.getToken();
-            }
+            // this.newAlarmData();
         },
         watch: {
             areaId(areaId) {
@@ -95,6 +95,39 @@
                         this.i += 3;
                     }
                 }
+            },
+            configData(data){
+                 var self = this;
+                 console.log(data);
+                if (!localStorage.getItem("token")) {
+                    var timeDate = self.timeStamp(new Date());
+                    self.axios({
+                        method: "post",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        withCredentials: false,
+                        url:data.homedTerminalLoginUrl,
+                        data: {
+                            "deviceno": timeDate + "" + md5("" + timeDate)[7],
+                            "devicetype": "zdt",
+                            "accounttype": 3,
+                            "account": localStorage.getItem("tel") + "",
+                            "timestamp": timeDate + "",
+                            "signature": md5((timeDate + "" + md5("" + timeDate)[7]) + "|zdt|3|" + localStorage.getItem("tel") + "|" + timeDate + ""),
+                            "identification": localStorage.getItem("CA").toLowerCase() + ""
+                        }
+                    }).then((res) => {
+                        if (res.data.ret == 0) {
+                            localStorage.setItem("token", res.data.access_token);
+                            console.log(localStorage.getItem("token"));
+                        } else {
+                            this.$alert("未获取到有效token,请稍后重试！");
+                            localStorage.setItem("token", "");
+                        }
+                    })
+                }
+                this.newAlarmData(data.rabbitmqIp,data.rabbitmqPort,data.rabbitmqUsername,data.rabbitmqPassword);
             }
         },
         methods: {
@@ -170,6 +203,7 @@
                         } else if (datalist.data.length == 2) {
                             self.first = datalist.data[0].areaName + " " + datalist.data[0].untreatedTotal+"条";
                             self.second = datalist.data[1].areaName + " " + datalist.data[1].untreatedTotal+"条";
+                
                         } else if (datalist.data.length == 1) {
                             self.first = datalist.data[0].areaName + " " + datalist.data[0].untreatedTotal+"条";
                         }
@@ -213,12 +247,13 @@
                 self.areaId = self.old;
             },
             //获取新报警消息
-            newAlarmData() {
+            newAlarmData(rabbitmqIp,rabbitmqPort,rabbitmqUsername,rabbitmqPassword) {
                 var self = this;
                 if (location.search == '?ws') {
-                    var client = Stomp.client('ws://192.168.18.100:15674/ws');
+                    // var client = Stomp.client('ws://192.168.18.100:15674/ws');
+                    var client = Stomp.client('ws://'+rabbitmqIp+':'+rabbitmqPort+'/ws');
                 } else {
-                    var ws = new SockJS('http://192.168.18.100:15674/stomp');
+                    var ws = new SockJS('http://'+rabbitmqIp+':'+rabbitmqPort+'/stomp');
                     var client = Stomp.over(ws);
                 }
                 client.heartbeat.outgoing = 20000;
@@ -274,39 +309,7 @@
                         self.$iHomed("logout");
                     }
                 };
-                client.connect('admin', 'admin', on_connect, on_error, '/');
-            },
-            getToken() {
-                var self = this;
-                console.log(localStorage.getItem("token"));
-                if (!localStorage.getItem("token")) {
-                    var timeDate = self.timeStamp(new Date());
-                    self.axios({
-                        method: "post",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded"
-                        },
-                        withCredentials: false,
-                        url: self.$iHomed("api", "get_token"),
-                        data: {
-                            "deviceno": timeDate + "" + md5("" + timeDate)[7],
-                            "devicetype": "zdt",
-                            "accounttype": 3,
-                            "account": localStorage.getItem("tel") + "",
-                            "timestamp": timeDate + "",
-                            "signature": md5((timeDate + "" + md5("" + timeDate)[7]) + "|zdt|3|" + localStorage.getItem("tel") + "|" + timeDate + ""),
-                            "identification": localStorage.getItem("CA").toLowerCase() + ""
-                        }
-                    }).then((res) => {
-                        if (res.data.ret == 0) {
-                            localStorage.setItem("token", res.data.access_token);
-                            console.log(localStorage.getItem("token"));
-                        } else {
-                            this.$alert("未获取到有效token,请稍后重试！");
-                            localStorage.setItem("token", "");
-                        }
-                    })
-                }
+                client.connect(rabbitmqUsername, rabbitmqPassword, on_connect, on_error, '/');
             },
         },
         components: {

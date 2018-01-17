@@ -53,7 +53,7 @@
                     <el-button type="primary" @click="cancelBlack" :disabled="blackOut" v-show="blackOutShow">取消拉黑</el-button>
                 </div>
                 <div class="searchButton">
-                    <el-input prefix-icon="el-icon-search" class="search" size="medium" @keyup.enter.native="search" placeholder="输入用户名,监控id搜索" v-model="search_value"></el-input>
+                    <el-input prefix-icon="el-icon-search" class="search" size="medium" @keyup.enter.native="search" placeholder="输入监控id、名称、描述搜索" v-model="search_value"></el-input>
                     <div style="float:right;">
                     <el-button type="primary" @click="search" style="width:90px;margin-left:16px;">查找</el-button>
                     <el-button @click="reset" style="width:90px;">重置</el-button>
@@ -121,47 +121,54 @@
                     :total="total">
                 </el-pagination>
             </div>
-            <div class="bindingdialog"  v-show="binding">
+            <div class="bindingdialog"  v-show="binding || importInput">
                 <div class="mask"></div> 
             <div class="binding">
-                <div class="name">选择区域</div>
-                <el-select v-model="province"  placeholder="选择区域"  @change="provinceChange" :class="{allWidth:!width,halfWidth:width}">
-                <el-option-group
-                    v-for="(group,key) in provinceOptions"
-                    :key="group.label"
-                    :label="group.label">
-                    <el-option
-                        v-for="item in group.options"
-                        :key="item.id"
-                        :label="item.label"
-                        :value="item.id">
-                </el-option>
-                </el-option-group>
-                </el-select>
-                <el-select v-model="city" placeholder="请选择" @change="cityChange" filterable class="halfWidth" style="margin-left:10px;" v-if=" province && width && cityOptions.length != 0">
-                    <el-option
-                        v-for="item in cityOptions"
-                        :key="item.id"
-                        :label="item.label"
-                        :value="item.id">
+                <div class="name" v-if="binding">选择区域</div>
+                <div class="name" v-if="importInput" style="margin-bottom:16px;">输入区域编号</div>
+                <div v-if="binding">
+                    <el-select v-model="province"  placeholder="选择区域"  @change="provinceChange" :class="{allWidth:!width,halfWidth:width}">
+                    <el-option-group
+                        v-for="(group,key) in provinceOptions"
+                        :key="group.label"
+                        :label="group.label">
+                        <el-option
+                            v-for="item in group.options"
+                            :key="item.id"
+                            :label="item.label"
+                            :value="item.id">
                     </el-option>
-                </el-select>
-                <el-select v-model="county"  @change="countyChange" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="city && countyOptions.length != 0">
-                    <el-option
-                        v-for="item in countyOptions"
-                        :key="item.id"
-                        :label="item.label"
-                        :value="item.id">
-                    </el-option>
-                </el-select>
-                <el-select v-model="countySide" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="county && countySideOptions.length != 0">
-                    <el-option
-                        v-for="item in countySideOptions"
-                        :key="item.id"
-                        :label="item.label"
-                        :value="item.id">
-                    </el-option>
-                </el-select>
+                    </el-option-group>
+                    </el-select>
+                    <el-select v-model="city" placeholder="请选择" @change="cityChange" filterable class="halfWidth" style="margin-left:10px;" v-if=" province && width && cityOptions.length != 0">
+                        <el-option
+                            v-for="item in cityOptions"
+                            :key="item.id"
+                            :label="item.label"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                    <el-select v-model="county"  @change="countyChange" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="city && countyOptions.length != 0">
+                        <el-option
+                            v-for="item in countyOptions"
+                            :key="item.id"
+                            :label="item.label"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                    <el-select v-model="countySide" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="county && countySideOptions.length != 0">
+                        <el-option
+                            v-for="item in countySideOptions"
+                            :key="item.id"
+                            :label="item.label"
+                            :value="item.id">
+                        </el-option>
+                    </el-select>
+                </div>
+                <div v-if="importInput">
+                    <p style="font-size:12px;text-align:center;margin:6px 0;"><span class="icon-must"></span>输入所有监控所在的分组id，多个分组id用 | 分隔，获取所有请输入0。</p>
+                    <el-input v-model="groupIds" placeholder="" class="groupIds"></el-input>
+                </div>
                 <div class="button">
                     <el-button @click="quyuCancel">取消</el-button>
                     <el-button type="primary" @click="quyuConfirm">确定</el-button>
@@ -171,7 +178,7 @@
            
         <right-menu @rightMenu="change" :rightMenu="rightMenu" :left="left" :top="top" :node="node" :treeData="treeData"></right-menu>
         <add-dialog @addSon="cancelAddSon" :parentLabel="parentLabel" :parentId="parentId" v-if="addSon" :mode="mode" :addName="addName" :treeData="treeData"></add-dialog>
-        <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
+        <monitor-info :alarmType="alarmType"  :configData="configData"  :current="1"></monitor-info>
     </div>
 </div>
 </template>
@@ -179,10 +186,9 @@
   import RightMenu from "./RightMenu.vue"
   import AddDialog from "./AddDialog.vue"
   import monitorInfo from "./../BMap/MonitorInfo.vue"
-  import Tree from "./../tree/src/tree.vue"
-  import {mapActions,mapMutations} from "vuex";
+  import Tree from "../tree/src/tree.vue"
 export default {
-    props:['alarmType'],
+    props:['alarmType',"configData"],
     data() {
       return {
           data:[],
@@ -250,7 +256,10 @@ export default {
         addData:{},
         firstIn:false,
         condition:"",
-        moniInfoShow:true
+        moniInfoShow:true,
+        groupIds:"",
+        groupId:"",
+        importInput:false,
         }
     },
     mounted(){
@@ -769,41 +778,8 @@ export default {
             },
             //同步信息
             monitorImport(){
-                var self = this;
-                this.$confirm('是否开始从监控系统导入监控', ' ', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    }).then(() => {
-                    //同步信息代码
-                    self.tableData = [];
-                    self.axios({
-                        method:"get",
-                        url:self.$iHomed("api","import_monitor"),
-                        params:{
-                            accesstoken:0
-                        }
-                    }).then((res)=>{
-                        console.log(res.data);  
-                        if(res.data.code != 0){
-                                this.$message({
-                                type: 'info',
-                                message: '导入失败'
-                            });  
-                            self.infoImport();
-                        }else{
-                            this.$message({
-                                type: 'success',
-                                message: '同步成功！'
-                            });
-                            self.infoImport();
-                        }  
-                    })
-                    }).catch(() => {
-                    this.$message({
-                        type: 'info',
-                        message: '已取消同步操作'
-                    });          
-                });
+                this.importInput  = true;
+                    
             },
             //绑定区域
             bindingData(){
@@ -905,32 +881,82 @@ export default {
             //绑定区域确认
             quyuConfirm(){
                 var self = this;
-                this.binding = false;
-                if(self.countySide && !isNaN(Number(self.countySide))){
-                    self.selectId = self.countySide;
-                }else if(self.county && !isNaN(Number(self.county))){
-                    self.selectId = self.county;
-                }else if(self.city && !isNaN(Number(self.city))){
-                    self.selectId = self.city;
-                }
-                else if( self.province &&!isNaN(Number(self.province))){
-                    self.selectId = self.province;
-                }
-                self.axios({
-                    url:self.$iHomed("api","binding_monitor"),
-                    method:"post",
-                    data:{
-                        areaId:self.selectId,
-                        ids:this.selectItem
+                if(this.binding){
+                    this.binding = false;
+                    if(self.countySide && !isNaN(Number(self.countySide))){
+                        self.selectId = self.countySide;
+                    }else if(self.county && !isNaN(Number(self.county))){
+                        self.selectId = self.county;
+                    }else if(self.city && !isNaN(Number(self.city))){
+                        self.selectId = self.city;
                     }
-                }).then((res)=>{
-                    console.log(res);
-                    if(res.data.code == 0){
-                        self.$alert("绑定成功！");
+                    else if( self.province &&!isNaN(Number(self.province))){
+                        self.selectId = self.province;
                     }
-                    self.first.id = localStorage.getItem("areaId");
-                    self.getTableData();
-                })
+                    self.axios({
+                        url:self.$iHomed("api","binding_monitor"),
+                        method:"post",
+                        data:{
+                            areaId:self.selectId,
+                            ids:this.selectItem
+                        }
+                    }).then((res)=>{
+                        console.log(res);
+                        if(res.data.code == 0){
+                            self.$alert("绑定成功！");
+                        }
+                        self.first.id = localStorage.getItem("areaId");
+                        self.getTableData();
+                    })
+                }
+                if(this.importInput){
+                    if(!self.groupIds){
+                        self.$alert("当前输入不可为空！");
+                        return false;
+                    }else{
+                        self.groupId = self.groupIds.split("|").join();
+                    }
+                    self.axios({
+                        method:"get",
+                        url:self.$iHomed("api","import_monitor"),
+                        params:{
+                            groupIds:self.groupId
+                        }
+                    }).then((res)=>{
+                        console.log(res.data);  
+                        if(res.data.data && !res.data.code ){
+                                this.$message({
+                                type: 'warning',
+                                message: res.data.data
+                            });  
+                            self.tableData = [];
+                            self.infoImport();
+                            self.quyuCancel();
+                        }else if(!res.data.data && !res.data.code){
+                            this.$message({
+                                type: 'success',
+                                message: '同步成功！'
+                            });
+                            self.tableData = [];
+                            self.infoImport();
+                            self.quyuCancel();
+                        }else{
+                            this.$message({
+                                type: 'warning',
+                                message: res.data.msg
+                            });
+                            // self.infoImport();
+                            self.quyuCancel();
+                        }  
+                        }).catch(() => {
+                        this.$message({
+                            type: 'warning',
+                            message: '同步失败'
+                        });      
+                        this.quyuCancel();
+                        this.getTableData();
+                    })
+                }
             },
             quyuCancel(){
                 this.province = "";
@@ -938,6 +964,8 @@ export default {
                 this.county = "";
                 this.countySide = "";
                 this.binding = false;
+                this.importInput = false;
+                this.groupIds = "";
             },
             getProv(){
                 var self = this;
@@ -1201,6 +1229,7 @@ export default {
         background:#fff;
         z-index:99;
     }
+
     .name{
         width:100%;
         height:40px;
@@ -1212,9 +1241,9 @@ export default {
         color:#fff;
 
     }
-    .allWidth{
+    .allWidth,.groupIds{
        width:96%;
-       margin-left:5px;
+       margin-left:7px;
 
     }
     .halfWidth{
@@ -1227,5 +1256,15 @@ export default {
     }
     .button .el-button{
         margin-left:12px;
+    }
+    .mask {
+        position: fixed;
+        top: 0;
+        bottom: 84px;
+        left: -264px;
+        right: 0;
+        background: #000;
+        opacity: 0.3;
+        z-index: 98;
     }
 </style>

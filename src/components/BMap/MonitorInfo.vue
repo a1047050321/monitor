@@ -1,7 +1,7 @@
 <template>
      <!--报警信息弹出框-->
 <div>
-    <div class="monitorInfo" v-if="!row.monitor && row.name">
+    <div class="monitorInfo" v-if="!row.playBack && row.name">
         <div class="infoHeader">报警信息</div>
         <div class="prev" @click="prevInfo">
             <i class="el-icon-arrow-left"></i>
@@ -23,8 +23,9 @@
         <div class="noMonitorShow" v-if="noMonitorShow">
             <div class="mask"></div>
             <div class="content1">
-                <div class="title1">报警信息<a href="javascript:void(0)"><span style="float:right;margin-right:16px;font-size:20px;color:#fff;" @click="close">&times;</span></a></div>
-                <div class="p" :title="row.address" style="margin-top:24px"><span>地区:{{row.address}}</span></div>
+                <div class="title1">报警信息<a href="javascript:void(0)"><span style="float:right;padding:0 16px;font-size:20px;color:#fff;" @click="close">&times;</span></a></div>
+                <div class="p" :title="row.address" style="margin:0 16px;margin-top:24px;height:16px;overflow: hidden;
+                    text-overflow:ellipsis;white-space: nowrap;"><span>地区:{{row.address}}</span></div>
                 <div class="p" :title="row.name"><span>报警人:{{row.name}}</span></div>
                 <div class="p" :title="row.alarmTypeName"><span>报警类型:{{row.alarmTypeName}}</span></div>
                 <ul class="opeator1">
@@ -43,8 +44,8 @@
                 </ul>
             </div>
         </div>
-        <div class="monitorInfo1" v-show="!row.monitor &&!buttonShow">
-                <span class="icon-success" style="position:absolute;left:80px;top:60px;"></span>
+        <div class="monitorInfo1" v-show="!row.playBack &&!buttonShow">
+                <span class="icon-success" style="position:absolute;left:60px;top:48px;"></span>
                 <div class="destription">
                 {{row.name}} 报警已解除</div>
                 <div style="text-align:right;margin-right:24px;">
@@ -54,7 +55,7 @@
          <no-monitor :mode="mode" :row="row" v-if="liClick" @liClick="opeator" @buttonShow="infoChange"></no-monitor>
         <edital-info v-show="editalInfo" @editalInfo="editalInfoReturn" :row="row" :alarmType="alarmType"></edital-info>
     </div>
-     <div class="monitorInfo" v-if=" row.monitor && tableData.length != 0">
+     <div class="monitorInfo" v-if=" row.monitor && row.playBack && tableData.length != 0">
         <div class="infoHeader">报警信息</div>
         <div class="pending">待处理:{{i+1 +"/"+length}}</div>
         <div class="prev" @click="prevInfo">
@@ -88,7 +89,7 @@
     import bus from "../../assets/js/bus"
 
     export default {
-        props: ["multipleSelection", "alarmType", "id"],
+        props: ["multipleSelection", "alarmType", "id","configData"],
         data() {
             return {
                 mode: 1,
@@ -108,6 +109,8 @@
                 feiFlag: false,
                 imgSrc: "",
                 noMonitorShow: false,
+                noOpeator:false,
+                setTime:0,
             }
         },
         watch: {
@@ -128,7 +131,7 @@
             },
             row: {
                 handler(newValue, oldValue) {
-                    if (newValue.monitor) {
+                    if (newValue.monitor && newValue.playBack) {
                         var self = this;
                         self.axios({
                             url: self.$iHomed("api", "get_picture") + newValue.monitor + "/" + parseInt(newValue.createDate / 1000),
@@ -142,7 +145,18 @@
                         })
                     }
                 },
-                　　deep: true
+                deep: true
+            },
+            configData:{
+                handler(newValue, oldValue) {
+                    var self = this;
+                    // console.log(newValue);
+                    if(newValue.homedTerminalLoginUrl){
+                        this.setTime = newValue.handleTimeout;
+                    }
+                },
+                deep:true,
+                immediate:true
             }
         },
         methods: {
@@ -195,13 +209,14 @@
                     this.noMonitorShow = true;
                 }
                 //退出弹框，解除标记
-                if(!this.liClick && !this.noMonitorShow){
+                if(!this.liClick && !this.noMonitorShow && !this.noOpeator){
                     self.axios({
                         method:"post",
                         url:self.$iHomed("api","editing")+self.row.id+"/cancel",
                     }).then((res)=>{
                         if(res.data.code == 0){
                             console.log("标记解除");
+                             this.noOpeator = true;
                         }
                     })
                 }
@@ -239,6 +254,7 @@
                     console.log(res.data);
                     if(res.data.code == 0){
                         console.log("标记解除");
+                         this.noOpeator = true;
                     }
                 })
             },
@@ -255,9 +271,11 @@
             //6个按钮点击事件
             ulbtnClick() {
                 var self = this;
+                $("ul.opeator1").unbind("click");
                 $("ul.opeator1").click(function(e) {
                     var e = e || window.event,
                         target = e.target || e.srcElement;
+                        e.preventDefault();
                     switch (target.textContent) {
                         case "致电":
                             self.mode = 1;
@@ -281,12 +299,27 @@
                                 self.$alert("请先致电！");
                                 return false;
                             } else {
-                                self.liClick = true;
-                                self.noMonitorShow = false;
+                                self.axios({
+                                    method:"put",
+                                    url:self.$iHomed("api","put_remark")+self.row.id+"/relieve?time=0",
+                                }).then((response)=>{
+                                    console.log(response);
+                                    if(response.data.data){
+                                        self.buttonShow = false;
+                                        self.noMonitorShow = false;
+                                        self.liClick = false;
+                                        
+                                    }else{
+                                        self.$alert(response.data.msg);
+                                        self.buttonShow = true;
+                                        self.noMonitorShow = true;
+                                        self.liClick = false;
+                                    }
+                                })
                             }
                             break;
                         case "处理":
-                        console.log(self.row);
+                        // console.log(self.row);
                             self.axios({
                                 method:"post",
                                 url:self.$iHomed("api","editing")+self.row.id,
@@ -295,9 +328,10 @@
                                 if(res.data.code == 0){
                                     console.log("标记成功");
                                     self.noMonitorShow = true;
+                                    self.noOpeator = false;
                                 //定时器
                                 setTimeout(function() {
-                                    if(self.noMonitorShow || self.liClick){
+                                    if((self.noMonitorShow || self.liClick) && !self.noOpeator){
                                         //把状态改为非处理
                                         self.noMonitorShow = false;
                                         self.liClick = false;
@@ -312,10 +346,13 @@
                                             console.log(res.data);
                                             if(res.data.code == 0){
                                                 console.log("标记解除");
+                                                 this.noOpeator = true;
+                                                self.noMonitorShow = false;
+                                                self.liClick = false;
                                             }
                                         })
                                     }
-                                    }, 120000);
+                                }, self.setTime *1000);
                                 //有人处理
                                 }else {
                                     self.noMonitorShow = false;
@@ -338,6 +375,7 @@
                 } else {
                     this.i = this.i - 1;
                 }
+                this.feiFlag = false;
                 this.row = this.tableData[this.i];
             },
             //下一条
@@ -347,6 +385,7 @@
                 }else{
                     this.i = this.i + 1;
                 }
+                this.feiFlag = false;
                 this.row = this.tableData[this.i];
             }
         },

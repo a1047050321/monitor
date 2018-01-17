@@ -6,6 +6,7 @@
         <el-date-picker
             v-model="startTime"
             size="medium"
+            id="time1"
             type="datetime"
             style="margin-right:4px;
             width:164px;"
@@ -17,13 +18,14 @@
             size="medium"
             style="margin-left:4px;
             width:164px;"
+            id="time2"
             type="datetime"
             placeholder="选择日期时间">
         </el-date-picker>
         <div class="searchButton">
-            <el-input class="search" size="medium"  prefix-icon="el-icon-search" v-model="search_value"  @keyup.enter.native="getData"  placeholder="输入机顶盒序列号、卡号、用户名、社区搜索"></el-input>
+            <el-input class="search" size="medium"  prefix-icon="el-icon-search" v-model="search_value"  @keyup.enter.native="getData"  placeholder="输入机顶盒序列号、卡号、用户名搜索"></el-input>
             <div style="margin-left:16px;float:right;">
-            <el-button  type="primary" size="medium" style="width:90px;"  @click.prevent="getData">搜索</el-button>
+            <el-button  type="primary" size="medium" style="width:90px;"  @click.prevent="search">搜索</el-button>
             <el-button  size="medium" style="width:90px;margin-left:12px;"  @click.prevent="reset">重置</el-button>
             </div>
         </div>
@@ -32,6 +34,7 @@
             <el-table
                 ref="singleTable"
                 :data="tableData"
+                v-loading="loading"
                 height="42px"
                 class="tableSet"
                 size="mini"
@@ -96,10 +99,10 @@
                 align="center"
                 >
                 <template  slot-scope="scope">
-                    <div slot="reference" class="name-wrapper" v-show="scope.row.monitor">
+                    <div slot="reference" class="name-wrapper" v-show="scope.row.monitor && scope.row.playBack">
                         <router-link :to="{path:'/handlePending',query:{row:JSON.stringify(scope.row),type:1,status:'待处理'}}"><i class="el-icon-view" ></i></router-link>
                     </div>
-                    <div v-show="!scope.row.monitor" style="text-align:center;">-</div> 
+                    <div v-show="!scope.row.playBack" style="text-align:center;">-</div> 
                 </template>
                 </el-table-column>
                 <el-table-column
@@ -109,10 +112,10 @@
                 align="center"
                 >
                     <template  slot-scope="scope">
-                    <div slot="reference" class="name-wrapper">
-                        <a href="javascript:void(0)"><i class="el-icon-document"></i></a>
-                    </div>
-                </template>
+                        <div slot="reference" class="name-wrapper">
+                            <a href="javascript:void(0)"><i class="el-icon-document"></i></a>
+                        </div>
+                    </template>
                 </el-table-column>
                 <el-table-column
                 width="70"
@@ -120,10 +123,10 @@
                 align="center"
                 label="处理">
                     <template  slot-scope="scope">
-                        <div slot="reference" class="name-wrapper" v-show="scope.row.monitor" style="text-align:center;">
+                        <div slot="reference" class="name-wrapper" v-show="scope.row.monitor && scope.row.playBack" style="text-align:center;">
                             <i class="el-icon-edit-outline" @click="toMonitor(scope.row)"></i>
                         </div>
-                        <div v-show="!scope.row.monitor" style="text-align:center;color:#4ba6ff"> <a href="javascript:void(0)" style="color:#4ba6ff"><i class="el-icon-edit-outline"></i></a></div> 
+                        <div v-show="!scope.row.playBack" style="text-align:center;color:#4ba6ff"> <a href="javascript:void(0)" style="color:#4ba6ff"><i class="el-icon-edit-outline"></i></a></div> 
                     </template>
                 </el-table-column>
             </el-table>
@@ -143,8 +146,9 @@
     <div class="noMonitorShow" v-if="noMonitorShow">
         <div class="mask"></div>
         <div class="content1">
-            <div class="title1">报警信息<a href="javascript:void(0)"><span style="float:right;margin-right:16px;font-size:20px;color:#fff;" @click="close">&times;</span></a></div>
-            <div class="p" :title="row.address" style="margin-top:24px"><span>地区:{{row.address}}</span></div>
+            <div class="title1">报警信息<a href="javascript:void(0)"><span style="float:right;padding:0 16px;font-size:20px;color:#fff;" @click="close">&times;</span></a></div>
+            <div class="p" :title="row.address" style="margin:0 16px;height:16px;margin-top:24px;overflow: hidden;
+                    text-overflow:ellipsis;white-space: nowrap;"><span>地区:{{row.address}}</span></div>
             <div class="p" :title="row.name"><span>报警人:{{row.name}}</span></div>
             <div class="p" :title="row.alarmTypeName"><span>报警类型:{{row.alarmTypeName}}</span></div>
             <ul class="opeator1">
@@ -175,7 +179,7 @@ import bus from "../../assets/js/bus"
 import md5 from "js-md5"
 
     export default{
-        props:["alarmType","showType"],
+        props:["alarmType","showType","configData"],
         data(){
             return {
                 total:0,
@@ -193,7 +197,6 @@ import md5 from "js-md5"
                 row:[],
                 moniInfoShow:false,
                 i:0,
-                monitor:0,
                 clickRow:[],
                 newAlarm:{},
                 playtoken:null,
@@ -201,8 +204,11 @@ import md5 from "js-md5"
                 changeRow:{},
                 flag:false,
                 temp:false,
+                searchFlag:false,
                 firstIn:false,
                 pageFlag:1,
+                //标记解除
+                noOpeator:false,
                 optionMethods: [{
                     value: '机顶盒',
                     label: '机顶盒',
@@ -222,8 +228,10 @@ import md5 from "js-md5"
                 mode:1,
                 liClick:false,
                 editalInfo:false,
-                buttonShow:false,       
-                monitor:"",
+                buttonShow:false,  
+                //false为非录流监控或者非监控
+                monitor:false,
+                loading:true,
             }
         },
         watch:{
@@ -233,13 +241,52 @@ import md5 from "js-md5"
                     this.pageIdx = 1;
                     this.getData();
                 }
+            },
+            configData:{
+                handler(newValue, oldValue) {
+                    var self = this;
+                    console.log(newValue);
+                    if(newValue.homedTerminalLoginUrl){
+                        if (!localStorage.getItem("token")) {
+                            var timeDate = self.timeStamp(new Date());
+                            self.axios({
+                                method: "post",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                withCredentials: false,
+                                url:newValue.homedTerminalLoginUrl,
+                                data: {
+                                    "deviceno": timeDate + "" + md5("" + timeDate)[7],
+                                    "devicetype": "zdt",
+                                    "accounttype": 3,
+                                    "account": localStorage.getItem("tel") + "",
+                                    "timestamp": timeDate + "",
+                                    "signature": md5((timeDate + "" + md5("" + timeDate)[7]) + "|zdt|3|" + localStorage.getItem("tel") + "|" + timeDate + ""),
+                                    "identification": localStorage.getItem("CA").toLowerCase() + ""
+                                }
+                            }).then((res) => {
+                                if (res.data.ret == 0) {
+                                    localStorage.setItem("token", res.data.access_token);
+                                    console.log(localStorage.getItem("token"));
+                                } else {
+                                    this.$alert("未获取到有效token,请稍后重试！");
+                                    localStorage.setItem("token", "");
+                                }
+                            })
+                        }
+                        this.setTime = newValue.handleTimeout;
+                    }
+                },
+                deep:true,
+                immediate:true
             }
         },
         methods:{
             //获取待处理数据
             getData(){
                 var self = this;
-                self.pageIdx = 1;
+                self.loading = true;
                 self.tableData = [];
                 self.axios({
                     url:self.$iHomed("api","get_untreated"),
@@ -247,14 +294,15 @@ import md5 from "js-md5"
                     params:{
                         currentPage: self.pageIdx,
                         pageSize:self.pageNum,
-                        beginTime:self.startTime?self.dateTranslate(self.startTime):"",
-                        endTime:self.endTime?self.dateTranslate(self.endTime):"",
-                        search:self.search_value
+                        beginTime:self.startTime && self.searchFlag?self.dateTranslate(self.startTime):"",
+                        endTime:self.endTime && self.searchFlag?self.dateTranslate(self.endTime):"",
+                        search:self.searchFlag?self.search_value:""
                     }
                 })
                 .then((res)=>{
                     if(res.data.data.data){
                         self.tableData = [];
+                        self.loading = false;
                         for(let i = 0;i < res.data.data.data.length;i++){
                             var datalist = res.data.data.data;
                             if(! datalist[i].terminalType){
@@ -313,7 +361,7 @@ import md5 from "js-md5"
             ulbtnClick(){
                 var self = this;
                 $("ul.opeator1").click(function(e){
-                    var e = e||window.event,
+                    var e = e || window.event,
                         target = e.target ||e.srcElement;
                     switch(target.textContent){
                         case "致电":
@@ -338,8 +386,28 @@ import md5 from "js-md5"
                             self.$alert("请先致电！");
                             return false;
                         }else{
-                        self.liClick = true;
-                        self.noMonitorShow = false;
+                            self.axios({
+                                method:"put",
+                                url:self.$iHomed("api","put_remark")+self.row.id+"/relieve?time=0",
+                            }).then((response)=>{
+                                console.log(response);
+                                if(response.data.data){
+                                    self.buttonShow = false;
+                                    self.noMonitorShow = false;
+                                    self.liClick = false;
+                                    self.feiFlag = false;
+                                    self.$message({
+                                        type: 'success',
+                                        message: '解除成功！'
+                                    });
+                                    self.getData();
+                                }else{
+                                    self.$alert(response.data.msg);
+                                    self.noMonitorShow = true;
+                                    self.liClick = false;
+                                    self.getData();
+                                }
+                            })
                         }
                         break;
                     }
@@ -356,17 +424,13 @@ import md5 from "js-md5"
                         console.log(res.data);
                         if(res.data.code == 0){
                             console.log("标记解除");
+                            this.noOpeator = true;
                         }
                     })
             },
             //非监控解除
             infoChange(a){
                 this.buttonShow = a;
-                 this.$message({
-                    type: 'success',
-                    message: '解除成功！'
-                });
-                this.getData();
             },
             //关闭noMonitor按钮弹窗
             opeator(a,b){
@@ -377,7 +441,7 @@ import md5 from "js-md5"
                     this.noMonitorShow = true;
                 }
                 //退出处理模式
-                if(!this.liClick && !this.noMonitorShow){
+                if(!this.liClick && !this.noMonitorShow && !this.noOpeator){
                     self.axios({
                         method:"post",
                         url:self.$iHomed("api","editing")+self.row.id+"/cancel",
@@ -385,6 +449,7 @@ import md5 from "js-md5"
                         console.log(res.data);
                         if(res.data.code == 0){
                             console.log("标记解除");
+                            this.noOpeator = true;
                         }
                     })
                 }
@@ -454,10 +519,10 @@ import md5 from "js-md5"
             edital(row, column, cell, event){
                 var self = this;
                 if(column.label == "详情"){
-                    self.monitor=row.monitor;
+                    self.monitor = row.playBack;
                     self.editalInfo = true;
                     self.row = row;
-                }else if(column.label == "处理" && !row.monitor){
+                }else if(column.label == "处理" && !row.playBack){
                     self.row = row;
                     //判断是否为正在处理状态  非监控报警
                     self.axios({
@@ -467,20 +532,38 @@ import md5 from "js-md5"
                         if(res.data.code == 0){
                             self.noMonitorShow = true;
                             console.log("标记成功");
+                            self.noOpeator = false;
                             //定时器
                             setTimeout(function(){
-                                self.noMonitorShow = false;
-                                //把状态改为非处理
-                                self.$message({
-                                    message: '当前操作已超时，请重新处理',
-                                    type: 'warning'
-                                });
-                            },120000);
+                                if((self.noMonitorShow || self.liClick) && !self.noOpeator){
+                                    self.noMonitorShow = false;
+                                    //把状态改为非处理
+                                    self.$message({
+                                        message: '当前操作已超时，请重新处理',
+                                        type: 'warning'
+                                    });
+                                    self.axios({
+                                        method:"post",
+                                        url:self.$iHomed("api","editing")+self.row.id+"/cancel",
+                                    }).then((res)=>{
+                                        console.log(res.data);
+                                        if(res.data.code == 0){
+                                            console.log("标记解除");
+                                            this.noOpeator = true;
+                                            self.noMonitorShow = false;
+                                            self.liClick = false;
+                                        }
+                                    })
+                                }else{
+                                    return false;
+                                }
+                            },this.setTime*1000);
                         //当前有人处理此报警
                         }else{
                             self.noMonitorShow = false;
-                            if(res.data.code ==101 && res.data.msg == "treated"){
+                            if(res.data.msg == "treated"){
                                 self.$alert("当前报警已处理，请选择其他报警处理");
+                                self.getData();
                             }else{
                                 self.$alert(res.data.msg);
                             }
@@ -489,41 +572,15 @@ import md5 from "js-md5"
                     })
                 }
             },
-            //如果当前有token，不执行，没有获取一遍
-            getToken(){
-                var self = this;
-                console.log(localStorage.getItem("token"));
-                if(!localStorage.getItem("token")){
-                    var timeDate = self.timeStamp(new Date());
-                    self.axios({
-                        method:"post", 
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded"
-                        },
-                        withCredentials: false,
-                        url:self.$iHomed("api","get_token"),
-                        data:{
-                            "deviceno":timeDate+ "" + md5(""+timeDate)[7],
-                            "devicetype":"zdt",
-                            "accounttype":3,
-                            "account":localStorage.getItem("tel")+"",
-                            "timestamp":timeDate+"",
-                            "signature":md5((timeDate+""+ md5(""+timeDate)[7])+"|zdt|3|"+localStorage.getItem("tel")+"|"+timeDate+""),
-                            "identification":localStorage.getItem("CA")+""
-                        }
-                    }).then((res)=>{
-                        if(res.data.ret == 0){
-                            localStorage.setItem("token",res.data.access_token);
-                            console.log(localStorage.getItem("token"));
-                        }else{
-                            this.$alert("未获取到有效token,请稍后重试！");
-                            localStorage.setItem("token","");
-                        }
-                    })
-                }
-            },   
+            //搜索按钮
+            search(){
+                this.pageIdx = 1;
+                this.searchFlag = true;
+                this.getData();
+            },
             //重置按钮
             reset(){
+                 this.searchFlag = false;
                 this.search_value = "";
                 this.beginTime = "";
                 this.endTime = "";
@@ -534,9 +591,6 @@ import md5 from "js-md5"
          mounted(){
             this.getData();
             this.row =this.tableData[this.i];
-            if(!localStorage.getItem("token")){
-                this.getToken();
-            }
             bus.$off("temp").$on("temp",(a)=>{
                     this.getData();
             });
@@ -644,13 +698,13 @@ import md5 from "js-md5"
         margin-left:8px;
     }
     .mask {
-    position: fixed;
-    top: 0;
-    bottom: 84px;
-    left: -264px;
-    right: 0;
-    background: #000;
-    opacity: 0.3;
-    z-index: 98;
-}
+        position: fixed;
+        top: 0;
+        bottom: 84px;
+        left: -264px;
+        right: 0;
+        background: #000;
+        opacity: 0.3;
+        z-index: 98;
+    }
 </style>

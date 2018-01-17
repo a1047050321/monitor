@@ -20,13 +20,13 @@
         </el-menu-item>
     </el-menu>
     <keep-alive>
-        <router-view :alarmType="alarmType" :areaId="areaId" @areaId="getAeraId"></router-view>
+        <router-view :alarmType="alarmType" :areaId="areaId" @areaId="getAeraId" :configData="configData"></router-view>
     </keep-alive>
 </div>
 </template>
 <script>
     export default{
-        props:["alarmType"],
+        props:["alarmType","configData"],
         data(){
             return {
                 pending:0,

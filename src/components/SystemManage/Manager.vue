@@ -121,7 +121,7 @@
             </div>
         </div>
        <add-guest v-if="addManage" :alarmType="alarmType" @addManage="addGuestReturn" :buttonClick="buttonClick" :multipleSelection="multipleSelection[0]" :first="firstData"></add-guest>
-       <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
+       <monitor-info :alarmType="alarmType" :configData="configData" :current="1"></monitor-info>
     </div>
 </div>
 </template>
@@ -131,7 +131,7 @@
   import Tree from "./../tree/src/tree.vue"
   import monitorInfo from './../BMap/MonitorInfo.vue'
   export default {
-    props:['alarmType'],
+    props:['alarmType',"configData"],
     data() {
       return {
         data: [],
@@ -275,6 +275,7 @@
                 var self = this;
                 //新增管理员
                 if(b){
+                    console.log(b);
                     if(self.buttonClick ==1){
                         self.axios({
                             method:"post",

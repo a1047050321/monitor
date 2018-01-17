@@ -17,6 +17,7 @@
 </div>
 </template>
 <script>
+import $ from "jquery"
     export default{
         props:["rightMenu","top","left","node","treeData"],
         data(){

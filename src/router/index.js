@@ -17,6 +17,7 @@ import Operate from '@/components/SystemManage/Operate'
 import Manager from '@/components/SystemManage/Manager'
 import AccessApp from '@/components/SystemManage/AccessApp'
 import ChangePsd from '@/components/User/ChangePsd'
+import ConfigManage from '@/components/SystemManage/ConfigManage'
 import Login from "@/components/Login"
 import Home from "@/components/Home"
 
@@ -95,26 +96,6 @@ const router = new Router({
                         name: 'NotifiManage',
                         component: NotifiManage
                     },
-                    // { // 乡村资讯
-                    //     path: '/countryExpress',
-                    //     name: 'CountryExpress',
-                    //     // component: CountryExpres
-                    // },
-                    // { // 乡村资讯
-                    //     path: '/countryExpress/countryNews',
-                    //     name: 'CountryNews',
-                    //     component: CountryNews
-                    // },
-                    // { // 安全资讯
-                    //     path: '/countryExpress/safeInfo',
-                    //     name: 'SafeInfo',
-                    //     component: SafeInfo
-                    // },
-                    // { // 三务公开
-                    //     path: '/countryExpress/threeOpen',
-                    //     name: 'ThreeOpen',
-                    //     component: ThreeOpen
-                    // },
                     { // 基本信息管理
                         path: '/baseInfoManage',
                         name: 'BaseInfoManage',
@@ -154,6 +135,11 @@ const router = new Router({
                         path: '/videoPlayer',
                         name: 'videoPlayer',
                         component: videoPlayer
+                    },
+                    { // 配置管理
+                        path: '/configManage',
+                        name: 'configManage',
+                        component: ConfigManage
                     },
 
                     { // 没有匹配到路由，重定向到模块一

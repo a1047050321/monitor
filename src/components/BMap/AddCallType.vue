@@ -38,10 +38,10 @@
                 <div><span class="icon-must"></span>信息</div>
                 <el-input type="textarea" style="width:100%;" autofocus ref="content" v-model="newInfo.content" placeholder="消息内容"></el-input>
             </div>
-            <div class="content-box1">
+            <!-- <div class="content-box1">
                 <div><span class="icon-must"></span>操作人</div>
                 <el-input type="input" style="width:100%;" v-model="newInfo.username" disabled></el-input>
-            </div>
+            </div> -->
             <div class="content-box1">
                 <div><span class="icon-must"></span>接受区域</div>
                 <el-select v-model="province" placeholder="选择区域"  filterable @change="provinceChange" :class="{allWidth:!width,halfWidth:width}">
@@ -57,7 +57,7 @@
                     </el-option>
                 </el-option-group>
                 </el-select>
-                <el-select v-model="city" placeholder="请选择" @change="cityChange" filterable class="halfWidth" style="margin-left:10px;" v-if=" province && cityOptions.length != 0">
+                <el-select v-model="city" placeholder="请选择" @change="cityChange" filterable class="halfWidth" style="margin-left:10px;" v-if=" width && cityOptions.length != 0">
                     <el-option
                         v-for="item in cityOptions"
                         :key="item.id"
@@ -65,7 +65,7 @@
                         :value="item.id">
                     </el-option>
                 </el-select>
-                <el-select v-model="county" placeholder="请选择"  @change="countyChange" filterable class="halfWidth" style="margin-left:10px;" v-if="city && countyOptions.length != 0">
+                <el-select v-model="county" placeholder="请选择"  @change="countyChange" filterable class="halfWidth" style="margin-left:10px;" v-if="width && countyOptions.length != 0">
                     <el-option
                         v-for="item in countyOptions"
                         :key="item.id"
@@ -73,7 +73,7 @@
                         :value="item.id">
                     </el-option>
                 </el-select>
-                <el-select v-model="countySide" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="county && countySideOptions.length != 0">
+                <el-select v-model="countySide" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="width && countySideOptions.length != 0">
                     <el-option
                         v-for="item in countySideOptions"
                         :key="item.id"
@@ -160,15 +160,31 @@
                 width: false,
                 repeatFlag: false,
                 confirmBtn: true,
-                notChange:true
+                notChange: true
             }
         },
         watch: {
             province(province) {
+                // if(isNaN(Number(province))){
+                this.provinceChange(province);
+                //如果city存在province不是整个长度
+                if (this.city) {
+                    this.width = true;
+                } else {
+                    this.width = false;
+                }
                 if (!province) {
                     this.width = false;
-                } else if (province) {
-                    this.width = true;
+                } else {
+                    if (this.multipleSelection && province == this.multipleSelection.areaName) {
+                        this.width = false;
+                    } else if (province == localStorage.getItem("areaId")) {
+                        this.width = false;
+                        console.log(this.guests);
+                    } else {
+                        this.width = true;
+                    }
+                    // }
                 }
             },
             newArea: {
@@ -230,7 +246,7 @@
                 //新增报警类型
                 else if (self.mode == 1) {
                     console.log(self.newArea);
-                    if(!self.newArea.code ||!self.newArea.code || !self.newArea.reportTime ){
+                    if (!self.newArea.code || !self.newArea.code || !self.newArea.reportTime) {
                         self.$alert("请补充信息");
                         for (let p in self.newArea) {
                             if (!self.newArea[p]) {
@@ -362,7 +378,7 @@
     
     .content {
         position: fixed;
-        top: 100px;
+        top: 64px;
         left: 35%;
         width: 30%;
         height: 506px;

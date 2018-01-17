@@ -13,7 +13,10 @@
 
 <style scoped>
 	.headerBar{
-		width:100%;
+		position:absolute;
+		top:0;
+		left:0;
+		width:240px;
 		height:64px;
 		line-height:64px;
 		font-size:20px;

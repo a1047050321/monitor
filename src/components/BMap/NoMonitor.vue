@@ -101,7 +101,7 @@
                                     type: 'success'
                                 });
                                 if(self.$router.history.current.name == "HandlePending"){
-                                    alert("当前监控页");
+                                    // alert("当前监控页");
                                     self.status = "success";
                                     self.$emit("liClick",self.liClick,self.status);
                                 }else{

@@ -25,7 +25,7 @@
                 </el-option>
              </el-option-group>
             </el-select>
-            <el-select v-model="city" placeholder="请选择" @change="cityChange" filterable class="halfWidth" style="margin-left:10px;" v-if=" width && city">
+            <el-select v-model="city" placeholder="请选择" @change="cityChange" filterable class="halfWidth" style="margin-left:10px;" v-if=" width && cityOptions.length !=0">
                 <el-option
                     v-for="item in cityOptions"
                     :key="item.id"
@@ -33,7 +33,7 @@
                     :value="item.id">
                 </el-option>
             </el-select>
-             <el-select v-model="county"  @change="countyChange" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="county">
+             <el-select v-model="county"  @change="countyChange" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="width && countyOptions.length !=0">
                 <el-option
                     v-for="item in countyOptions"
                     :key="item.id"
@@ -41,7 +41,7 @@
                     :value="item.id">
                 </el-option>
             </el-select>
-             <el-select v-model="countySide" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="countySide">
+             <el-select v-model="countySide" placeholder="请选择" filterable class="halfWidth" style="margin-left:10px;" v-if="width && countySideOptions.length != 0">
                 <el-option
                     v-for="item in countySideOptions"
                     :key="item.id"
@@ -266,14 +266,25 @@
             },
             province(province) {
                 // if(isNaN(Number(province))){
-                if (province) {
-                    this.provinceChange(province);
-                }
+                this.provinceChange(province);
                 //如果city存在province不是整个长度
-                if (this.city) {
+                if (this.cityOptions) {
                     this.width = true;
                 } else {
                     this.width = false;
+                    this.newGuest.areaId = this.first.id;
+                }
+                if (!province) {
+                    this.width = false;
+                } else {
+                    if (this.multipleSelection && province == this.multipleSelection.areaName) {
+                        this.width = false;
+                    } else if (province == localStorage.getItem("areaId")) {
+                        this.width = false;
+                    } else {
+                        this.width = true;
+                    }
+                    // }
                 }
             },
             city(city) {
@@ -512,36 +523,24 @@
                 })
             },
             provinceChange(val) {
-                //val 为id
                 var self = this;
-                //遍历下级区域
-                if (self.provinceOptions[1]) {
-                    for (let i = 0; i < self.provinceOptions[1].options.length; i++) {
-                        if (self.provinceOptions[1].options[i].id == val) {
-                            self.width = true;
-                        }
-                    }
-                }
-                // if(val == self.provinceOptions[0].options[0].id){
-                //     self.width = false;
-                // }
                 //val为id继续
                 if (!isNaN(Number(val))) {
                     if (self.flag1) {
                         self.city = "";
+                        self.county = "";
+                        self.countySide = "";
                     }
                     self.flag1 = true;
                     self.cityOptions = [];
-                    if (val != localStorage.getItem("areaId")) {
-                        self.axios({
-                            method: "get",
-                            url: self.$iHomed("api", "get_treeList") + val,
-                        }).then((res) => {
-                            res = res.data.data;
-                            console.log(res);
-                            self.cityOptions = res.children;
-                        })
-                    }
+                    self.axios({
+                        method: "get",
+                        url: self.$iHomed("api", "get_treeList") + val,
+                    }).then((res) => {
+                        res = res.data.data;
+                        // console.log(res);
+                        self.cityOptions = res.children;
+                    })
                 }
             },
             cityChange(val) {
@@ -628,7 +627,7 @@
     
     .content {
         position: fixed;
-        top: 100px;
+        top: 64px;
         left: 35%;
         width: 30%;
         height: 506px;
@@ -672,6 +671,6 @@
     }
     
     .halfWidth {
-        width: 20%;
+        width: 22%;
     }
 </style>

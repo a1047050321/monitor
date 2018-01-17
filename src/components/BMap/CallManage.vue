@@ -19,13 +19,13 @@
         </el-menu-item>
     </el-menu>
     <keep-alive>
-    <router-view :alarmType="alarmType" :processedData="processedData" :processed="processed" @total="getUntreated"></router-view>
+    <router-view :alarmType="alarmType" :configData="configData" :processedData="processedData" :processed="processed" @total="getUntreated"></router-view>
     </keep-alive>
 </div>
 </template>
 <script>
     export default{
-        props:["alarmType"],
+        props:["alarmType","configData"],
         data(){
             return {
                 pending:0,

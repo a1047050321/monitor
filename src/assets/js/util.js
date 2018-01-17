@@ -8,7 +8,8 @@ import router from '../../router'
 import { MessageBox } from 'element-ui';
 Vue.use($);
 var flag = false;
-
+var configDataPC = {};
+var configDataCommon = {};
 // 公共工具函数
 var util = {
     flag: true,
@@ -230,6 +231,7 @@ var util = {
             util.addZero(d.getHours()) + util.addZero(d.getMinutes()) + util.addZero(d.getSeconds());
         // }
     },
+
     /**
      * 转换空格为 &nbsp;
      * @param  {String} str 需要转换的字符串
@@ -938,9 +940,7 @@ if (CONFIG.dev) {
 }
 
 Object.assign(iHomed, util);
-
 export default {
-
     install: function(vm) {
         //导出全局方法
         vm.prototype.$iHomed = iHomed;

@@ -51,13 +51,14 @@
             </el-table-column>
         </el-table>
     <add-callType v-if="addType" :mode="mode" @editType="editInfo"  @addType="typeChange" :multipleSelection="multiple"></add-callType>
-    <monitor-info :alarmType="alarmType" :current="1"></monitor-info>
+    <monitor-info :alarmType="alarmType" :configData="configData" :current="1"></monitor-info>
 </div>
 </template>
 <script>
 import AddCallType from './AddCallType'
 import MonitorInfo from "./MonitorInfo"
     export default{
+        props:['configData'],
         data(){
             return {
                 tableData:[],
@@ -90,7 +91,7 @@ import MonitorInfo from "./MonitorInfo"
                 })
                 .then((res)=>{
                     res = res.data.data;
-                    console.log(res.data);
+                    // console.log(res.data);
                     for(let i = 0;i<res.data.length;i++){
                         if(res.data[i].repeat){
                             res.data[i].repeat = "true";
@@ -117,13 +118,11 @@ import MonitorInfo from "./MonitorInfo"
              //选择显示数量
              handleSizeChange(val) {
                  //看接口最大能获取多少
-                console.log(`每页 ${val} 条`);
                 this.maxResult = val;
                 this.getData();
             },
             //点击第几页
             handleCurrentChange(val) {
-                console.log(val);
                 this.page = val;
                 // this.getData();
             },
@@ -133,12 +132,24 @@ import MonitorInfo from "./MonitorInfo"
                  var username = localStorage.getItem("username");
                 if(username == "admin"){
                     if(this.multipleSelection.length == 1){
+                        if(this.multipleSelection[0].code == "000"){
+                            this.del = true;
+                        }else{
+                            this.del = false;
+                        }
                         this.multi = false;
                     }else{
                         this.multi = true;
                     };
                     if(this.multipleSelection.length >= 1){
-                        this.del = false;
+                        function filter(a){
+                            return a.code == "000";
+                        }
+                        if(this.multipleSelection.filter(filter).length == 1){
+                            this.del = true;
+                        }else{
+                            this.del = false;
+                        }
                     }
                     else{
                         this.del = true;
@@ -157,7 +168,7 @@ import MonitorInfo from "./MonitorInfo"
                  var self = this;
                  //修改报警类型
                  if(self.mode == 4){
-                     console.log(a);
+                    //  console.log(a);
                      self.axios({
                         method:"put",
                         data:{
@@ -171,7 +182,7 @@ import MonitorInfo from "./MonitorInfo"
                         url:self.$iHomed("api","edit_type")+a.id
                      })
                         .then((res)=>{
-                            console.log(res);
+                            // console.log(res);
                             var ret = res.data.data;
                             if(ret){
                                 self.addType = false;
@@ -192,7 +203,7 @@ import MonitorInfo from "./MonitorInfo"
                         data:a,
                         url:self.$iHomed("api","add_type")
                         }).then((res)=>{
-                        console.log(res);
+                        // console.log(res);
                             var ret = res.data.data;
                         if(ret){
                             self.addType = false;

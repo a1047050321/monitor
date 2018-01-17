@@ -1,7 +1,4 @@
-// var slaveAddr = globalDnsConfigVar.slaveAddr,
-//     accessAddr = globalDnsConfigVar.accessAddr,
-//     dtvAddr = globalDnsConfigVar.dtvAddr;
-
+import axios from "axios";
 // 系统配置文件
 var CONFIG = {
     // boss 首页地址
@@ -81,8 +78,6 @@ var CONFIG = {
 
     ]
 };
-
-
 /**
  * 扩展系统接口
  * 
@@ -95,10 +90,15 @@ var CONFIG = {
  *         url: "{method}_apiname"
  *     } );
  */
-var root = "http://192.168.18.100:18181/";
-// 后台地址：113.98.233.208:18181  内网192.168.18.100:18181
-// rabbitmq：104.128.92.37    端口和之前的一样，账号admin，密码root
-
+axios.get("serverconfig.json").then((result) => {
+    localStorage.removeItem('ApiUrl');
+    localStorage.setItem('ApiUrl', result.data.ApiUrl);
+    // console.log(localStorage.getItem('ApiUrl'));
+    // 后台地址：113.98.233.208:18181  内网192.168.18.100:18181
+    //现场 125.62.47.205:8080
+    // rabbitmq：104.128.92.37    端口和之前的一样，账号admin，密码root
+}).catch((error) => { console.log(error) });
+var root = localStorage.getItem('ApiUrl') ? localStorage.getItem('ApiUrl') : "http://192.168.18.100:18181/";
 var API = {
     //登录接口
     'auto_login': root + "AlarmManage/auth/login",
@@ -119,7 +119,7 @@ var API = {
     //监控频道导入
     "monitor_channel": "http://api.slave.homed.me:13160/monitor/channel/get_list",
     //获取监控的playtoken
-    "paly_token": "http://slave.homed.me/media/get_authority_info?playtype=live",
+    // "paly_token": "http://slave.homed.me/media/get_authority_info?playtype=live",
     "paly_url": "http://slave.homed.me:13160/monitor/channel/get_info",
     "mock_monitor": "http://www.easy-mock.com/mock/59ca2601e0dc663341bbb910/monitor/get_monitor",
     //待处理报警信息
@@ -157,6 +157,8 @@ var API = {
     "get_list": root + "AlarmManage/area/",
     //搜索接口
     "to_search": "",
+    //上传用户下载模板
+    "upload": root + "AlarmManage/import_customer.xlsx",
 
     //STB 用户管理
     //获取用户列表get 新增用户列表post 删除delete
@@ -185,7 +187,7 @@ var API = {
     //获取弹出框的监控截图
     "get_picture": root + "AlarmManage/homed/poster/",
     //监控导入
-    "import_monitor": root + "AlarmManage/monitor/import/monitor",
+    "import_monitor": root + "AlarmManage/monitor/import",
     //查询未绑定摄像头
     "unbinding_monitor": root + "AlarmManage/monitor/unbinding",
     //绑定监控至区域/社区
@@ -195,8 +197,16 @@ var API = {
     //搜索监控
     "monitor_search": root + "AlarmManage/monitor/search",
 
-};
+    //配置管理
+    //查询后台配置
+    "get_system": root + "AlarmManage/config/system",
+    //获取后台、页面、app公共配置信息
+    "get_common": root + "AlarmManage/config/common",
+    //GET /config/webandapp 获取页面和app公共配置
+    "get_webApp": root + "AlarmManage/config/web",
+    "get_web": root + "AlarmManage/config/webconfig",
 
+};
 export {
     API,
     CONFIG
