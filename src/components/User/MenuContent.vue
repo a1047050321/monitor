@@ -78,15 +78,16 @@ import bus from "./../../assets/js/bus.js"
 							children: [{
 									name: "管理员管理",
 									to: "/systemManage/manager",
-								}, {
-									name: "系统日志",
-									to: "/systemManage/operate",
-								},
+								}, 
 								{
 									name: "配置管理",
 									to: "/configManage",
 									iconClass: "el-icon-question",
+								},{
+									name: "系统日志",
+									to: "/systemManage/operate",
 								},
+								
 								{
 									name: "接入应用",
 									to: "/systemManage/accessApp",

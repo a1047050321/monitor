@@ -228,7 +228,7 @@
                             var finalTime = nowTime+200 >= setTime ? setTime :nowTime;
                             // console.log(self.utcChange(self.dateTranslate(new Date())));
                             // console.log(self.utcChange(self.dateTranslate(new Date()))-200);
-                            self.row.monitorUrl = url + "?accesstoken=" + localStorage.getItem("token") + "&protocol=hls&playtype=lookback&auth=no&rate=org&programid=" + self.row.monitor + "&playtoken=" + response.data.play_token + "&starttime=" +
+                            self.row.monitorUrl = url + "&accesstoken=" + localStorage.getItem("token") + "&protocol=hls&auth=no&rate=org&programid=" + self.row.monitor + "&playtoken=" + response.data.play_token + "&starttime=" +
                                 self.utcChange(Number(self.row.createDate) - startTime*1000) + "&endtime=" + finalTime;
                             // this.row.demandurl = url;
                             self.url = self.row.monitorUrl; 

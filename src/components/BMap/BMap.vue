@@ -11,10 +11,16 @@
     <div class="second" :title="second" v-if="second">{{second}}</div>
     <div class="third" :title="third" v-if="third">{{third}}</div>
 </div>
+<audio id="player"
+        controls="controls"
+        loop
+       src="../../../static/alarm.mp3"
+       style="visibility:hidden;">
+</audio>
     <monitor-info :moniInfoShow="moniInfoShow" :alarmType="alarmType" :configData="configData"  :current="1"></monitor-info>
 </div>
 </template>
-<script>
+<script> 
     import Pie from "./Pie"
     import MonitorInfo from "./MonitorInfo"
     import bus from "../../assets/js/bus"
@@ -83,6 +89,15 @@
             // this.newAlarmData();
         },
         watch: {
+            temp(temp){
+                if(temp){
+                    let audio = document.getElementById("player");
+                    audio.play();
+                    $("body").click(function(){
+                        audio.pause();
+                    })
+                }
+            },
             areaId(areaId) {
                 this.$emit("areaId", areaId);
                 this.mapShow();
@@ -159,6 +174,16 @@
                     });
                     map.addOverlay(label);
                 };
+                // //新增交通拥堵
+                //  var ctrl = new BMapLib.TrafficControl({
+                //     showPanel: false
+                // });      
+                // map.addControl(new BMap.NavigationControl());
+                // map.enableContinuousZoom(false); 
+                // map.addControl(ctrl);
+                // ctrl.setAnchor(BMAP_ANCHOR_BOTTOM_RIGHT);  
+                // ctrl.showTraffic();
+
                 //允许鼠标缩放
                 map.enableScrollWheelZoom(true);
                 //添加坐标点

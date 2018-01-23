@@ -196,7 +196,9 @@
                         isNaN(Number(this.data1[p].value)))){
                             arr.push(this.data1[p].name);
                         }
-                        this.changeData[this.data1[p].fieldName] = this.data1[p].value;
+                        let value = this.data1[p].value.toString();
+                        console.log(value);
+                        this.changeData[this.data1[p].fieldName] = value.replace(/\s/g,"");
                     }
                     if(arr.length != 0){
                         this.$alert(arr.join("，")+"必须为数字");
@@ -240,7 +242,8 @@
                 }else{
                     arr = [];
                     for(let p in this.data2){
-                        this.changeData[this.data2[p].fieldName] = this.data2[p].value;
+                        let value = this.data2[p].value.toString();
+                        this.changeData[this.data2[p].fieldName] = value.replace(/\s/g,"");
                     }
                 }
                 this.data2Show = !this.data2Show;
@@ -279,7 +282,8 @@
                         if(isNaN(Number(this.data3[p].value))){
                             arr.push(this.data3[p].name);
                         }
-                        this.changeData[this.data3[p].fieldName] = this.data3[p].value;
+                        let value = this.data3[p].value.toString();
+                        this.changeData[this.data3[p].fieldName] = value.replace(/\s/g,"");
                     }
                     if(arr.length != 0){
                         this.$alert(arr.join("，")+"必须为数字");

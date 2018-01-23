@@ -9,10 +9,10 @@ import Processed from '@/components/BMap/Processed'
 import CallControl from '@/components/BMap/CallControl'
 import NotifiManage from '@/components/BMap/NotifiManage'
 import HandlePending from '@/components/BMap/HandlePending'
-import videoPlayer from '@/components/BMap/videoPlayer'
+// import videoPlayer from '@/components/BMap/videoPlayer'
 import BaseInfoManage from '@/components/BaseInfoManage/BaseInfoManage'
 import STBManage from '@/components/BaseInfoManage/STBManage'
-import TreeTest from '@/components/TreeTest'
+// import TreeTest from '@/components/TreeTest'
 import Operate from '@/components/SystemManage/Operate'
 import Manager from '@/components/SystemManage/Manager'
 import AccessApp from '@/components/SystemManage/AccessApp'
@@ -106,11 +106,11 @@ const router = new Router({
                         name: 'STBManage',
                         component: STBManage
                     },
-                    { // 用户新增
-                        path: '/treeTest',
-                        name: 'TreeTest',
-                        component: TreeTest
-                    },
+                    // { // 用户新增
+                    //     path: '/treeTest',
+                    //     name: 'TreeTest',
+                    //     component: TreeTest
+                    // },
                     { // 用户修改密码
                         path: '/user/changePsd',
                         name: 'ChangePsd',
@@ -131,11 +131,11 @@ const router = new Router({
                         name: 'Operate',
                         component: Operate
                     },
-                    { // 视频播放
-                        path: '/videoPlayer',
-                        name: 'videoPlayer',
-                        component: videoPlayer
-                    },
+                    // { // 视频播放
+                    //     path: '/videoPlayer',
+                    //     name: 'videoPlayer',
+                    //     component: videoPlayer
+                    // },
                     { // 配置管理
                         path: '/configManage',
                         name: 'configManage',

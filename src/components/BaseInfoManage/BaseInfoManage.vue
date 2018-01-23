@@ -926,7 +926,7 @@ export default {
                         console.log(res.data);  
                         if(res.data.data && !res.data.code ){
                                 this.$message({
-                                type: 'warning',
+                                type: 'success',
                                 message: res.data.data
                             });  
                             self.tableData = [];
